@@ -4,62 +4,43 @@ from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 
 # --- CONFIGURAÇÃO DA PÁGINA E DESIGN REFINADO ---
+# O layout 'centered' garante que os campos não fiquem esticados em telas grandes
 st.set_page_config(page_title="AGT CLOUD RM", page_icon="☁️", layout="centered")
 
-# CSS focado em centralização, redução de largura dos campos e legibilidade total
+# CSS para Modernidade e Legibilidade (Deep Navy & Slate)
 st.markdown("""
 <style>
-    /* Fundo Moderno */
     .stApp { 
         background: linear-gradient(135deg, #0E1624 0%, #1A2634 100%) !important; 
     }
-    
-    /* Centralização e Limite de Largura do Bloco Principal */
     .block-container {
         max-width: 800px !important;
         padding-top: 2rem !important;
     }
-
-    /* Títulos e Textos Claros */
     h1, h2, h3, label, p {
         color: #FFFFFF !important;
         font-family: 'Segoe UI', sans-serif;
     }
-
-    /* Inputs Menores e Compactos */
-    .stTextInput>div>div>input, .stSelectbox>div>div>div, .stTextArea>div>textarea {
-        background-color: #F8FAFC !important;
+    input, select, textarea, div[data-baseweb="select"], div[data-baseweb="input"] {
         color: #1A2634 !important;
+        background-color: #F8FAFC !important;
         border-radius: 6px !important;
-        height: 38px !important;
     }
-    
-    /* Ajuste específico para área de observações */
-    .stTextArea>div>textarea { height: 80px !important; }
-
-    /* Estilo do Código de Check-in */
     code {
         color: #4ADE80 !important;
         background-color: #0F172A !important;
         border-radius: 8px;
-        padding: 10px !important;
+        padding: 15px !important;
+        display: block;
     }
-
-    /* Botão de Sucesso (Registrar) */
     div.stButton > button:first-child {
         background: linear-gradient(90deg, #22C55E 0%, #16A34A 100%);
-        border: none;
-        color: white;
-        font-weight: bold;
-        height: 45px;
+        border: none; color: white; font-weight: bold; height: 45px;
     }
-
-    /* Checklist com espaçamento menor */
-    .stCheckbox { margin-bottom: -10px !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- CONSTANTES E LÓGICA (CÓDIGO INTACTO CONFORME REQUERIDO) ---
+# --- CONSTANTES DE NEGÓCIO (PRESERVADAS DO CÉREBRO v1.9.5) ---
 PLANILHA_ID = "1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg"
 LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg/edit?gid=869568018#gid=869568018"
 
@@ -87,25 +68,43 @@ ANALISTAS_MAP = {
 CHECKLIST_LABELS = [
     "Abrir uma solicitação para cada ambiente solicitado",
     "Verificar horários vs número de agendamentos",
-    "Verificar se o patch não foi cancelado",
-    "Verificar se o cliente marcou réplica",
-    "Verificar se o ticket possui anexos/links"
+    "Verificar se o patch não foi cancelado pelo produto",
+    "Verificar se o cliente marcou réplica ao solicitar PRD",
+    "Verificar se o ticket possui anexos ou links necessários"
 ]
 
+# --- MOTOR DE CONEXÃO (BLINDADO) ---
+
 def conectar_google():
+    """Autenticação Robusta: Sanitiza a chave para evitar erros ASN1/Padding na nuvem."""
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         creds_dict = dict(st.secrets["gcp_service_account"])
+        
+        # Sanitização Profunda
         raw_key = creds_dict["private_key"]
-        if "-----END PRIVATE KEY-----" in raw_key:
-            raw_key = raw_key.split("-----END PRIVATE KEY-----")[0] + "-----END PRIVATE KEY-----"
-        creds_dict["private_key"] = raw_key.replace("\\n", "\n").strip()
+        clean_key = raw_key.replace("\\n", "\n").strip()
+        
+        # Garantia de Delimitadores RSA
+        if not clean_key.startswith("-----BEGIN"):
+            clean_key = "-----BEGIN PRIVATE KEY-----\n" + clean_key
+        if not clean_key.endswith("-----END PRIVATE KEY-----"):
+            clean_key = clean_key + "\n-----END PRIVATE KEY-----"
+            
+        creds_dict["private_key"] = clean_key
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
         return client.open_by_key(PLANILHA_ID).sheet1
     except Exception as e:
-        st.error(f"Erro de Conexão: {e}")
+        st.error(f"⚠️ Erro Crítico de Estrutura: {e}")
         return None
+
+def buscar_primeira_linha_vazia(sheet):
+    try:
+        col_a = sheet.col_values(1)
+        return len(col_a) + 1
+    except:
+        return 2
 
 def buscar_horarios_disponiveis(sheet, data_inicio_str, analista, qtd_necessaria, hora_inicio_manual):
     try:
@@ -113,31 +112,30 @@ def buscar_horarios_disponiveis(sheet, data_inicio_str, analista, qtd_necessaria
         horarios_permitidos = ESCALAS[escala_nome]
         data_base_obj = datetime.datetime.strptime(data_inicio_str, "%d/%m/%Y")
         all_rows = sheet.get_all_values()
+        
         idx = horarios_permitidos.index(hora_inicio_manual) if hora_inicio_manual in horarios_permitidos else 0
         horarios_validacao = horarios_permitidos[idx:]
         disponiveis = []
+        
         for h in horarios_validacao:
             h_int = int(h.split(":")[0])
             d_alvo = data_base_obj + datetime.timedelta(days=1) if h_int < 7 else data_base_obj
             d_str = d_alvo.strftime("%d/%m/%Y")
-            ocupado = False
-            for row in all_rows:
-                if len(row) > 6:
-                    if row[0] == d_str and row[1].startswith(h) and row[6] == analista:
-                        ocupado = True
-                        break
+            
+            ocupado = any(row[0] == d_str and row[1].startswith(h) and row[6] == analista for row in all_rows if len(row) > 6)
+            
             if not ocupado: disponiveis.append((d_str, h))
             if len(disponiveis) == int(qtd_necessaria): break
         return disponiveis
     except: return []
 
-# --- UI CENTRALIZADA ---
+# --- INTERFACE CENTRALIZADA ---
+
 st.title("☁️ AGT Cloud RM")
 
 if 'sheet' not in st.session_state:
     st.session_state.sheet = conectar_google()
 
-# Formatação em colunas para evitar campos esticados
 with st.container():
     c1, c2 = st.columns(2)
     ticket = c1.text_input("Ticket")
@@ -187,23 +185,24 @@ if btn_registrar:
         sheet = st.session_state.sheet
         if sheet:
             try:
-                coluna_data = sheet.col_values(1)
-                first_empty_row = len(coluna_data) + 1
-                for i, val in enumerate(coluna_data):
-                    if val.strip() == "":
-                        first_empty_row = i + 1
-                        break
                 data_str = data_input.strftime("%d/%m/%Y")
                 horarios = buscar_horarios_disponiveis(sheet, data_str, analista, qtd_tickets, hora_inicio)
                 
                 if len(horarios) < qtd_tickets:
-                    st.error("❌ Janelas insuficientes!")
+                    st.error("❌ Janelas insuficientes para este analista!")
                 else:
+                    primeira_linha = buscar_primeira_linha_vazia(sheet)
                     carimbo = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    
                     novas_linhas = [[d, h, reagendado, ticket, org, atividade, analista, carimbo, solicitante, obs_texto, cliente_tipo, ambiente, topo, ""] for d, h in horarios]
-                    range_label = f"A{first_empty_row}:N{first_empty_row + len(novas_linhas) - 1}"
-                    sheet.update(values=novas_linhas, range_name=range_label, value_input_option='USER_ENTERED')
-                    st.success(f"🎉 Registrado na linha {first_empty_row}!")
-                    st.code(f"--- CHECK-IN ---\nCLIENTE: {org} | TICKET: {ticket}", language="text")
+                    
+                    sheet.update(values=novas_linhas, range_name=f"A{primeira_linha}:N{primeira_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
+                    
+                    st.success(f"🎉 Registrado com sucesso na linha {primeira_linha}!")
+                    
+                    # Check-in gerado na tela
+                    resumo = f"--- CHECK-IN ---\nTÍTULO: [AGENDADO] [{data_str}] - {atividade}\nCLIENTE: {org} | TICKET: {ticket}\nANALISTA: {analista}"
+                    st.subheader("📋 Mensagens do Check-in")
+                    st.code(resumo, language="text")
             except Exception as e:
-                st.error(f"Erro: {e}")
+                st.error(f"Erro na Gravação: {e}")
