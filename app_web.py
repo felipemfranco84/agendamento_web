@@ -3,18 +3,19 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 
-# --- CONFIGURAÇÃO DA PÁGINA E DESIGN CLEAN ---
+# --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="AGT CLOUD RM", page_icon="☁️", layout="centered")
 
-# CSS: Estilo focado na imagem (Cinza claro, bordas quadradas, botões sóbrios)
+# CSS: FORÇA O TEMA CLARO E AJUSTA BOTÕES
 st.markdown("""
 <style>
-    /* Fundo Cinza Claro */
+    /* Força Fundo Cinza Claro e Texto Escuro */
     .stApp { 
-        background-color: #F0F2F5 !important; 
+        background-color: #F0F2F5 !important;
+        color: #16191F !important;
     }
     
-    /* Bloco de conteúdo (Card Branco Minimalista) */
+    /* Card do Formulário */
     .block-container {
         max-width: 850px !important;
         background-color: #FFFFFF !important;
@@ -25,59 +26,70 @@ st.markdown("""
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* Títulos e Textos Sóbrios */
-    h1, h2, h3 {
+    /* Cores de Texto e Títulos */
+    h1, h2, h3, label, p, span, .stMarkdown {
         color: #16191F !important;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    label, p {
-        color: #393F44 !important;
-        font-weight: 500 !important;
     }
 
-    /* Inputs Quadrados e Limpos */
+    /* Inputs */
     input, select, textarea, div[data-baseweb="select"], div[data-baseweb="input"] {
         color: #16191F !important;
         background-color: #FFFFFF !important;
         border: 1px solid #8D959E !important;
-        border-radius: 2px !important;
     }
 
-    /* Botão Registrar - Azul Corporativo Sólido */
-    div.stButton > button:first-child {
-        background-color: #0066CC !important;
-        color: white !important;
-        border: none;
-        border-radius: 4px;
-        padding: 0.6rem;
-        font-weight: 600;
-        height: 40px;
+    /* BOTÃO REGISTRAR (DINÂMICO) */
+    div.stButton > button:disabled {
+        background-color: #D1D5DB !important;
+        color: #9CA3AF !important;
+        border: none !important;
+    }
+
+    div.stButton > button:not(:disabled) {
+        background-color: #28a745 !important;
+        color: #000000 !important;
+        border: none !important;
+        font-weight: bold !important;
+    }
+
+    /* BOTÃO ABRIR PLANILHA (PRETO COM LETRAS BRANCAS FORÇADO) */
+    div[data-testid="stLinkButton"] > a {
+        background-color: #000000 !important;
+        border-radius: 4px !important;
+        text-decoration: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 45px !important;
+        border: none !important;
     }
     
-    /* Botão Abrir Planilha - Cinza Sóbrio */
-    div.stButton > button:last-child {
-        background-color: #F0F2F5 !important;
-        color: #0066CC !important;
-        border: 1px solid #0066CC !important;
-        border-radius: 4px;
-        font-weight: 600;
-        height: 40px;
+    /* Ajuste específico para a cor do texto do link */
+    div[data-testid="stLinkButton"] p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+        margin: 0 !important;
     }
 
-    /* Estilo do Check-in (Fundo gelo, bordas retas) */
+    div[data-testid="stLinkButton"] > a:hover {
+        background-color: #333333 !important;
+    }
+
+    /* Checkbox */
+    input[type="checkbox"]:checked + div {
+        background-color: #28a745 !important;
+    }
+
     code {
         color: #16191F !important;
         background-color: #F8F9FA !important;
-        border: 1px solid #DDE1E6;
-        border-left: 4px solid #0066CC;
-        border-radius: 0px;
-        padding: 1rem !important;
+        border-left: 4px solid #28a745;
+        display: block;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- CONSTANTES DE NEGÓCIO (CÓDIGO INTACTO) ---
+# --- CONSTANTES DE NEGÓCIO ---
 PLANILHA_ID = "1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg"
 LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg/edit?gid=869568018#gid=869568018"
 
@@ -107,7 +119,7 @@ CHECKLIST_LABELS = [
     "Verificar horários vs número de agendamentos",
     "Verificar se o patch não foi cancelado pelo produto",
     "Verificar se o cliente marcou réplica",
-    "Verificar se o ticket possui anexos ou links"
+    "Verificar se o ticket possui anexos ou links necessário"
 ]
 
 def conectar_google():
@@ -116,23 +128,11 @@ def conectar_google():
         creds_dict = dict(st.secrets["gcp_service_account"])
         raw_key = creds_dict["private_key"]
         clean_key = raw_key.replace("\\n", "\n").strip()
-        if not clean_key.startswith("-----BEGIN"):
-            clean_key = "-----BEGIN PRIVATE KEY-----\n" + clean_key
-        if not clean_key.endswith("-----END PRIVATE KEY-----"):
-            clean_key = clean_key + "\n-----END PRIVATE KEY-----"
         creds_dict["private_key"] = clean_key
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
         return client.open_by_key(PLANILHA_ID).sheet1
-    except Exception as e:
-        st.error(f"Erro de Conexão: {e}")
-        return None
-
-def buscar_primeira_linha_vazia(sheet):
-    try:
-        col_a = sheet.col_values(1)
-        return len(col_a) + 1
-    except: return 2
+    except: return None
 
 def buscar_horarios_disponiveis(sheet, data_inicio_str, analista, qtd_necessaria, hora_inicio_manual):
     try:
@@ -153,48 +153,54 @@ def buscar_horarios_disponiveis(sheet, data_inicio_str, analista, qtd_necessaria
         return disponiveis
     except: return []
 
-# --- INTERFACE ---
-st.title("☁️ AGT Cloud RM")
-
+if 'form_id' not in st.session_state:
+    st.session_state.form_id = 0
 if 'sheet' not in st.session_state:
     st.session_state.sheet = conectar_google()
 
+def reset_form():
+    st.session_state.form_id += 1
+
+# --- INTERFACE ---
+st.title("☁️ AGT Cloud RM")
+f_id = st.session_state.form_id
+
 with st.container():
     c1, c2 = st.columns(2)
-    ticket = c1.text_input("Ticket")
-    org = c2.text_input("Organização")
+    ticket = c1.text_input("Ticket", key=f"tk_{f_id}")
+    org = c2.text_input("Organização", key=f"og_{f_id}")
     
     c3, c4 = st.columns(2)
-    ambiente = c3.selectbox("Ambiente", ["Produção", "Homologação", "Treinamento", "Não Produtivo"])
-    topo = c4.text_input("Topologia")
+    ambiente = c3.selectbox("Ambiente", ["Produção", "Homologação", "Treinamento", "Não Produtivo"], key=f"ab_{f_id}")
+    topo = c4.text_input("Topologia", key=f"tp_{f_id}")
     
     c5, c6 = st.columns(2)
-    cliente_tipo = c5.selectbox("Cliente", ["Standard", "Prime"])
-    reagendado = c6.selectbox("Reagendado?", ["Não", "Sim"])
+    cliente_tipo = c5.selectbox("Cliente", ["Standard", "Prime"], key=f"ct_{f_id}")
+    reagendado = c6.selectbox("Reagendado?", ["Não", "Sim"], key=f"re_{f_id}")
     
     c7, c8 = st.columns(2)
-    atividade = c7.selectbox("Atividade", ["Atualizar Release RM", "Atualizar Patch RM", "Réplica de Base", "Atualizar Customização RM", "Atualizar Metadados RM", "Outros"])
-    analista = c8.selectbox("Analista", sorted(list(ANALISTAS_MAP.keys())))
+    atividade = c7.selectbox("Atividade", ["Atualizar Release RM", "Atualizar Patch RM", "Réplica de Base", "Atualizar Customização RM", "Atualizar Metadados RM", "Outros"], key=f"at_{f_id}")
+    analista = c8.selectbox("Analista", sorted(list(ANALISTAS_MAP.keys())), key=f"al_{f_id}")
     
     c9, c10 = st.columns(2)
-    solicitante = c9.text_input("Solicitante")
-    data_input = c10.date_input("Data", datetime.date.today())
+    solicitante = c9.text_input("Solicitante", key=f"sl_{f_id}")
+    data_input = c10.date_input("Data", datetime.date.today(), key=f"da_{f_id}")
     
     c11, c12 = st.columns(2)
-    hora_inicio = c11.text_input("Hora Início", value="22:00")
-    qtd_tickets = c12.number_input("Qtd de Ticket", min_value=1, value=1)
+    hora_inicio = c11.text_input("Hora Início", value="22:00", key=f"ho_{f_id}")
+    qtd_tickets = c12.number_input("Qtd de Ticket", min_value=1, value=1, key=f"qt_{f_id}")
     
-    st.markdown("**Transição de Versão:**")
-    cv1, cv_seta, cv2 = st.columns([1, 0.2, 1])
-    v_atual = cv1.text_input("De", label_visibility="collapsed", placeholder="Versão Atual")
+    st.write("**Transição de Versão:**")
+    cv1, cv_seta, cv2 = st.columns([1, 0.1, 1])
+    v_atual = cv1.text_input("De", label_visibility="collapsed", placeholder="Atual", key=f"va_{f_id}")
     cv_seta.markdown("### →")
-    v_desejada = cv2.text_input("Para", label_visibility="collapsed", placeholder="Versão Destino")
+    v_desejada = cv2.text_input("Para", label_visibility="collapsed", placeholder="Destino", key=f"vd_{f_id}")
     
-    obs_texto = st.text_area("Observações")
+    obs_texto = st.text_area("Observações", key=f"ob_{f_id}")
 
-st.markdown("---")
+st.divider()
 st.subheader("🛡️ Checklist de Segurança")
-checks = [st.checkbox(label) for label in CHECKLIST_LABELS]
+checks = [st.checkbox(label, key=f"ck_{i}_{f_id}") for i, label in enumerate(CHECKLIST_LABELS)]
 
 col_btn1, col_btn2 = st.columns(2)
 with col_btn2:
@@ -204,20 +210,24 @@ with col_btn1:
     btn_registrar = st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not all(checks), use_container_width=True)
 
 if btn_registrar:
-    with st.spinner("Aguarde..."):
+    with st.spinner("⏳ Gravando..."):
         sheet = st.session_state.sheet
         if sheet:
             try:
                 data_str = data_input.strftime("%d/%m/%Y")
                 horarios = buscar_horarios_disponiveis(sheet, data_str, analista, qtd_tickets, hora_inicio)
                 if len(horarios) < qtd_tickets:
-                    st.error("❌ Janelas insuficientes para o analista!")
+                    st.error("❌ Janelas insuficientes!")
                 else:
-                    primeira_linha = buscar_primeira_linha_vazia(sheet)
+                    col_a = sheet.col_values(1)
+                    prox_linha = len(col_a) + 1
                     carimbo = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                     novas_linhas = [[d, h, reagendado, ticket, org, atividade, analista, carimbo, solicitante, obs_texto, cliente_tipo, ambiente, topo, ""] for d, h in horarios]
-                    sheet.update(values=novas_linhas, range_name=f"A{primeira_linha}:N{primeira_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
-                    st.success("✅ Agendamento registrado.")
-                    st.code(f"--- CHECK-IN ---\nTÍTULO: [AGENDADO] [{data_str}] - {atividade}\nCLIENTE: {org} | TICKET: {ticket}", language="text")
+                    sheet.update(values=novas_linhas, range_name=f"A{prox_linha}:N{prox_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
+                    
+                    st.success("✅ Agendamento realizado com sucesso!")
+                    st.balloons()
+                    st.code(f"--- CHECK-IN ---\nCLIENTE: {org} | TICKET: {ticket}", language="text")
+                    st.button("🔄 NOVO PREENCHIMENTO", on_click=reset_form)
             except Exception as e:
-                st.error(f"Erro: {e}")
+                st.error(f"❌ Erro ao gravar: {e}")
