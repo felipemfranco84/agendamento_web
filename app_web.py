@@ -6,47 +6,67 @@ import datetime
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="AGT CLOUD RM", page_icon="☁️", layout="centered")
 
-# CSS: FORÇA TEMA CLARO, AJUSTA BOTÕES E BORDAS RETAS
+# CSS: FORÇA TEMA CLARO, BORDAS RETAS E AJUSTA CORES DE BOTÕES
 st.markdown("""
 <style>
+    * { border-radius: 0px !important; }
     .stApp { background-color: #F0F2F5 !important; color: #16191F !important; }
     .block-container {
         max-width: 850px !important;
         background-color: #FFFFFF !important;
         padding: 2rem !important;
         border: 1px solid #DDE1E6;
-        border-radius: 0px !important;
         margin-top: 1rem;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    h1, h2, h3, label, p, span, .stMarkdown { color: #16191F !important; }
-    input, select, textarea, div[data-baseweb="select"], div[data-baseweb="input"] {
-        color: #16191F !important;
-        background-color: #FFFFFF !important;
+    
+    /* PADRONIZAÇÃO DE BORDAS: INPUTS, SELECTS E NUMBER_INPUT */
+    div[data-baseweb="input"] > div, 
+    div[data-baseweb="select"] > div,
+    div[data-testid="stNumberInput"] > div,
+    textarea {
         border: 1px solid #8D959E !important;
-        border-radius: 0px !important;
+        background-color: #FFFFFF !important;
+        box-shadow: none !important;
+        outline: none !important;
     }
-    div.stButton > button:disabled { background-color: #D1D5DB !important; color: #9CA3AF !important; border-radius: 0px !important; }
+
+    /* ESTADO DE CLIQUE (FOCO): APENAS ESCURECE A BORDA */
+    div[data-baseweb="input"]:focus-within, 
+    div[data-baseweb="select"]:focus-within,
+    div[data-testid="stNumberInput"]:focus-within,
+    textarea:focus {
+        border-color: #16191F !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
+    h1, h2, h3, label, p, span, .stMarkdown { color: #16191F !important; }
+    input, select, textarea { caret-color: #16191F !important; color: #16191F !important; }
+
+    /* BOTÃO REGISTRAR (VERDE) */
     div.stButton > button:not(:disabled) {
         background-color: #28a745 !important;
         color: #000000 !important;
         font-weight: bold !important;
-        border-radius: 0px !important;
     }
+
+    /* BOTÃO ABRIR PLANILHA (PRETO COM LETRA BRANCA) */
     div[data-testid="stLinkButton"] > a {
         background-color: #000000 !important;
-        color: #FFFFFF !important;
-        border-radius: 0px !important;
-        font-weight: bold !important;
         text-decoration: none !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         height: 45px !important;
     }
-    div[data-testid="stLinkButton"] p { color: #FFFFFF !important; margin: 0 !important; }
-    input[type="checkbox"]:checked + div { background-color: #28a745 !important; }
-    code { color: #16191F !important; background-color: #F8F9FA !important; border-left: 4px solid #28a745; display: block; }
+
+    /* CORREÇÃO: FORÇA A LETRA DO BOTÃO LINK PARA BRANCO */
+    div[data-testid="stLinkButton"] p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+        margin: 0 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -143,7 +163,7 @@ with st.container():
     data_input = c10.date_input("Data", datetime.date.today(), key=f"da_{f_id}")
     
     c11, c12 = st.columns(2)
-    hora_inicio = c11.text_input("Horário", value="22:00", key=f"ho_{f_id}")
+    hora_inicio = c11.text_input("Horário (HH:MM)", value="22:00", key=f"ho_{f_id}")
     qtd_tickets = c12.number_input("Qtd de Ticket", min_value=1, value=1, key=f"qt_{f_id}")
     
     obs_texto = st.text_area("Observações", key=f"ob_{f_id}")
@@ -161,7 +181,6 @@ checks = [st.checkbox(label, key=f"ck_{i}_{f_id}") for i, label in enumerate(CHE
 # VALIDAÇÃO DE OBRIGATORIEDADE E ESCALA
 campos_preenchidos = all([ticket, org, topo, solicitante, hora_inicio])
 ticket_valido = ticket.isdigit() if ticket else False
-# NOVA VALIDAÇÃO: Verifica se o horário informado existe na lista de horários permitidos da escala do analista
 horario_na_escala = hora_inicio in ESCALAS[ANALISTAS_MAP[analista]]
 habilitar_botao = all(checks) and campos_preenchidos and ticket_valido and horario_na_escala
 
