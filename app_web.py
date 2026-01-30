@@ -6,7 +6,7 @@ import datetime
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="AGT CLOUD RM", page_icon="☁️", layout="centered")
 
-# CSS: FORÇA O TEMA CLARO E AJUSTA BOTÕES
+# CSS: FORÇA TEMA CLARO, AJUSTA BOTÕES E DEFINE BORDAS RETAS
 st.markdown("""
 <style>
     /* Força Fundo Cinza Claro e Texto Escuro */
@@ -15,13 +15,13 @@ st.markdown("""
         color: #16191F !important;
     }
     
-    /* Card do Formulário */
+    /* Card do Formulário com Bordas Retas */
     .block-container {
         max-width: 850px !important;
         background-color: #FFFFFF !important;
         padding: 2rem !important;
         border: 1px solid #DDE1E6;
-        border-radius: 4px;
+        border-radius: 0px !important; /* BORDA RETA */
         margin-top: 1rem;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
@@ -31,18 +31,20 @@ st.markdown("""
         color: #16191F !important;
     }
 
-    /* Inputs */
+    /* Inputs com Bordas Retas */
     input, select, textarea, div[data-baseweb="select"], div[data-baseweb="input"] {
         color: #16191F !important;
         background-color: #FFFFFF !important;
         border: 1px solid #8D959E !important;
+        border-radius: 0px !important; /* BORDA RETA */
     }
 
-    /* BOTÃO REGISTRAR (DINÂMICO) */
+    /* BOTÃO REGISTRAR (DINÂMICO) - BORDAS RETAS */
     div.stButton > button:disabled {
         background-color: #D1D5DB !important;
         color: #9CA3AF !important;
         border: none !important;
+        border-radius: 0px !important;
     }
 
     div.stButton > button:not(:disabled) {
@@ -50,12 +52,13 @@ st.markdown("""
         color: #000000 !important;
         border: none !important;
         font-weight: bold !important;
+        border-radius: 0px !important; /* BORDA RETA */
     }
 
-    /* BOTÃO ABRIR PLANILHA (PRETO COM LETRAS BRANCAS FORÇADO) */
+    /* BOTÃO ABRIR PLANILHA - BORDAS RETAS */
     div[data-testid="stLinkButton"] > a {
         background-color: #000000 !important;
-        border-radius: 4px !important;
+        border-radius: 0px !important; /* BORDA RETA */
         text-decoration: none !important;
         display: flex !important;
         align-items: center !important;
@@ -64,7 +67,6 @@ st.markdown("""
         border: none !important;
     }
     
-    /* Ajuste específico para a cor do texto do link */
     div[data-testid="stLinkButton"] p {
         color: #FFFFFF !important;
         font-weight: bold !important;
@@ -75,7 +77,7 @@ st.markdown("""
         background-color: #333333 !important;
     }
 
-    /* Checkbox */
+    /* Checkbox Verde */
     input[type="checkbox"]:checked + div {
         background-color: #28a745 !important;
     }
@@ -84,6 +86,7 @@ st.markdown("""
         color: #16191F !important;
         background-color: #F8F9FA !important;
         border-left: 4px solid #28a745;
+        border-radius: 0px !important; /* BORDA RETA */
         display: block;
     }
 </style>
@@ -119,7 +122,6 @@ CHECKLIST_LABELS = [
     "Verificar se o patch não foi cancelado pelo produto.",
     "Verificar se o cliente marcou réplica ao solicitar a atualização de produção; em caso positivo, gerar um novo ticket para a réplica e validar se os servidores de PRD e DEV estão na mesma versão",
     "Verificar se o ticket possui anexos ou links necessários para a realização de atualizações de customizações, entre outros.",
-    
 ]
 
 def conectar_google():
