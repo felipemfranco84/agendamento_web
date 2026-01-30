@@ -83,6 +83,7 @@ ESCALAS = {
 }
 
 ANALISTAS_MAP = {
+    "": "FULL TIME",
     "Pierre Esteves": "NOITE (22h-06h)", "Vinicius Lacerda": "NOITE (22h-06h)",
     "Ariany Oliveira": "ESCALA NOITE (18h-06h)", "Tobias Conti": "ESCALA NOITE (18h-06h)",
     "Felipe Franco": "ESCALA NOITE (18h-06h)", "Alessio Faria": "ESCALA NOITE (18h-06h)",
@@ -147,15 +148,15 @@ with st.container():
     org = c2.text_input("Organização", key=f"og_{f_id}")
     
     c3, c4 = st.columns(2)
-    ambiente = c3.selectbox("Ambiente", ["Produção", "Desenvolvimento", "Homologação", "Qualidade", "Troubleshooting"], key=f"ab_{f_id}")
+    ambiente = c3.selectbox("Ambiente", ["", "Produção", "Desenvolvimento", "Homologação", "Qualidade", "Troubleshooting"], key=f"ab_{f_id}")
     topo = c4.text_input("Topologia", key=f"tp_{f_id}")
     
     c5, c6 = st.columns(2)
-    cliente_tipo = c5.selectbox("Cliente", ["Standard", "Prime"], key=f"ct_{f_id}")
-    reagendado = c6.selectbox("É reagendamento?", ["Não", "Sim"], key=f"re_{f_id}")
+    cliente_tipo = c5.selectbox("Cliente", ["","Standard", "Prime"], key=f"ct_{f_id}")
+    reagendado = c6.selectbox("É reagendamento?", ["","Não", "Sim"], key=f"re_{f_id}")
     
     c7, c8 = st.columns(2)
-    atividade = c7.selectbox("Atividade", ["Atualizar Release RM", "Atualizar Patch RM", "Réplica de Base", "Atualizar Customização RM", "Atualizar Metadados RM", "Outros"], key=f"at_{f_id}")
+    atividade = c7.selectbox("Atividade", ["","Atualizar Release RM", "Atualizar Patch RM", "Réplica de Base", "Atualizar Customização RM", "Atualizar Metadados RM", "Outros"], key=f"at_{f_id}")
     analista = c8.selectbox("Para qual analista?", sorted(list(ANALISTAS_MAP.keys())), key=f"al_{f_id}")
     
     c9, c10 = st.columns(2)
@@ -163,7 +164,7 @@ with st.container():
     data_input = c10.date_input("Data", datetime.date.today(), key=f"da_{f_id}")
     
     c11, c12 = st.columns(2)
-    hora_inicio = c11.text_input("Horário (HH:MM)", value="22:00", key=f"ho_{f_id}")
+    hora_inicio = c11.text_input("Horário (HH:MM)", key=f"ho_{f_id}")
     qtd_tickets = c12.number_input("Qtd de Ticket", min_value=1, value=1, key=f"qt_{f_id}")
     
     obs_texto = st.text_area("Observações", key=f"ob_{f_id}")
