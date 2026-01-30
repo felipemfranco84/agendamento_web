@@ -3,72 +3,81 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 
-# --- CONFIGURAÇÃO DA PÁGINA E DESIGN REFINADO ---
-# Define o layout centralizado para evitar campos esticados
+# --- CONFIGURAÇÃO DA PÁGINA E DESIGN CLEAN ---
 st.set_page_config(page_title="AGT CLOUD RM", page_icon="☁️", layout="centered")
 
-# CSS Avançado: Paleta Deep Navy & Slate com foco em centralização e legibilidade
+# CSS: Estilo focado na imagem (Cinza claro, bordas quadradas, botões sóbrios)
 st.markdown("""
 <style>
-    /* Fundo Moderno em Gradient */
+    /* Fundo Cinza Claro */
     .stApp { 
-        background: linear-gradient(135deg, #0E1624 0%, #1A2634 100%) !important; 
+        background-color: #F0F2F5 !important; 
     }
     
-    /* Centralização do conteúdo principal */
+    /* Bloco de conteúdo (Card Branco Minimalista) */
     .block-container {
-        max-width: 800px !important;
-        padding-top: 2rem !important;
+        max-width: 850px !important;
+        background-color: #FFFFFF !important;
+        padding: 2rem !important;
+        border: 1px solid #DDE1E6;
+        border-radius: 4px;
+        margin-top: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* Títulos e Labels em Branco/Gelo */
-    h1, h2, h3, label, p, .stMarkdown {
-        color: #FFFFFF !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Títulos e Textos Sóbrios */
+    h1, h2, h3 {
+        color: #16191F !important;
+        font-family: 'Inter', sans-serif;
     }
     
-    /* Campos de Entrada (Fundo Claro para Contraste de Digitação) */
+    label, p {
+        color: #393F44 !important;
+        font-weight: 500 !important;
+    }
+
+    /* Inputs Quadrados e Limpos */
     input, select, textarea, div[data-baseweb="select"], div[data-baseweb="input"] {
-        color: #1A2634 !important;
-        background-color: #F8FAFC !important;
-        border-radius: 8px !important;
-        border: none !important;
+        color: #16191F !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #8D959E !important;
+        border-radius: 2px !important;
     }
 
-    /* Estilo do Código de Check-in (Terminal) */
-    code {
-        color: #4ADE80 !important;
-        background-color: #0F172A !important;
-        border: 1px solid #1E293B;
-        padding: 15px !important;
-        border-radius: 10px;
-        display: block;
-    }
-
-    /* Botão Principal de Registro (Gradient Success) */
+    /* Botão Registrar - Azul Corporativo Sólido */
     div.stButton > button:first-child {
-        background: linear-gradient(90deg, #22C55E 0%, #16A34A 100%);
-        color: white;
+        background-color: #0066CC !important;
+        color: white !important;
         border: none;
-        padding: 0.75rem 1.5rem;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        height: 45px;
+        border-radius: 4px;
+        padding: 0.6rem;
+        font-weight: 600;
+        height: 40px;
     }
     
-    div.stButton > button:first-child:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    /* Botão Abrir Planilha - Cinza Sóbrio */
+    div.stButton > button:last-child {
+        background-color: #F0F2F5 !important;
+        color: #0066CC !important;
+        border: 1px solid #0066CC !important;
+        border-radius: 4px;
+        font-weight: 600;
+        height: 40px;
     }
 
-    /* Estilização dos Checkboxes */
-    .stCheckbox label p {
-        color: #CBD5E1 !important;
+    /* Estilo do Check-in (Fundo gelo, bordas retas) */
+    code {
+        color: #16191F !important;
+        background-color: #F8F9FA !important;
+        border: 1px solid #DDE1E6;
+        border-left: 4px solid #0066CC;
+        border-radius: 0px;
+        padding: 1rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- CONSTANTES DE NEGÓCIO (PRESERVADAS) ---
+# --- CONSTANTES DE NEGÓCIO (CÓDIGO INTACTO) ---
 PLANILHA_ID = "1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg"
 LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg/edit?gid=869568018#gid=869568018"
 
@@ -95,47 +104,35 @@ ANALISTAS_MAP = {
 
 CHECKLIST_LABELS = [
     "Abrir uma solicitação para cada ambiente solicitado",
-    "Verificar se a quantidade de horários condiz com o agendamento",
+    "Verificar horários vs número de agendamentos",
     "Verificar se o patch não foi cancelado pelo produto",
-    "Verificar se o cliente marcou réplica (se sim, gerar novo ticket)",
-    "Verificar se o ticket possui anexos ou links necessários"
+    "Verificar se o cliente marcou réplica",
+    "Verificar se o ticket possui anexos ou links"
 ]
 
-# --- LÓGICA DE CONEXÃO (SANÍTIZAÇÃO RSA) ---
-
 def conectar_google():
-    """Conecta à API do Google tratando erros de padding e ASN1 comuns na nuvem."""
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        # Converte segredos para dicionário manipulável
         creds_dict = dict(st.secrets["gcp_service_account"])
-        
-        # LIMPEZA CRÍTICA: Resolve erro de Base64 e ASN1
         raw_key = creds_dict["private_key"]
-        # Trata \n literais e garante quebras de linha reais
         clean_key = raw_key.replace("\\n", "\n").strip()
-        
-        # Garante integridade dos marcadores RSA
         if not clean_key.startswith("-----BEGIN"):
             clean_key = "-----BEGIN PRIVATE KEY-----\n" + clean_key
         if not clean_key.endswith("-----END PRIVATE KEY-----"):
             clean_key = clean_key + "\n-----END PRIVATE KEY-----"
-            
         creds_dict["private_key"] = clean_key
-        
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
         return client.open_by_key(PLANILHA_ID).sheet1
     except Exception as e:
-        st.error(f"⚠️ Erro Crítico de Estrutura: {e}")
+        st.error(f"Erro de Conexão: {e}")
         return None
 
 def buscar_primeira_linha_vazia(sheet):
     try:
         col_a = sheet.col_values(1)
         return len(col_a) + 1
-    except:
-        return 2
+    except: return 2
 
 def buscar_horarios_disponiveis(sheet, data_inicio_str, analista, qtd_necessaria, hora_inicio_manual):
     try:
@@ -157,13 +154,11 @@ def buscar_horarios_disponiveis(sheet, data_inicio_str, analista, qtd_necessaria
     except: return []
 
 # --- INTERFACE ---
-
 st.title("☁️ AGT Cloud RM")
 
 if 'sheet' not in st.session_state:
     st.session_state.sheet = conectar_google()
 
-# FORMULÁRIO CENTRALIZADO
 with st.container():
     c1, c2 = st.columns(2)
     ticket = c1.text_input("Ticket")
@@ -191,9 +186,9 @@ with st.container():
     
     st.markdown("**Transição de Versão:**")
     cv1, cv_seta, cv2 = st.columns([1, 0.2, 1])
-    v_atual = cv1.text_input("De", label_visibility="collapsed", placeholder="Origem")
-    cv_seta.markdown("### ➡️")
-    v_desejada = cv2.text_input("Para", label_visibility="collapsed", placeholder="Destino")
+    v_atual = cv1.text_input("De", label_visibility="collapsed", placeholder="Versão Atual")
+    cv_seta.markdown("### →")
+    v_desejada = cv2.text_input("Para", label_visibility="collapsed", placeholder="Versão Destino")
     
     obs_texto = st.text_area("Observações")
 
@@ -209,27 +204,20 @@ with col_btn1:
     btn_registrar = st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not all(checks), use_container_width=True)
 
 if btn_registrar:
-    with st.spinner("⏳ Processando dados..."):
+    with st.spinner("Aguarde..."):
         sheet = st.session_state.sheet
         if sheet:
             try:
                 data_str = data_input.strftime("%d/%m/%Y")
                 horarios = buscar_horarios_disponiveis(sheet, data_str, analista, qtd_tickets, hora_inicio)
-                
                 if len(horarios) < qtd_tickets:
                     st.error("❌ Janelas insuficientes para o analista!")
                 else:
                     primeira_linha = buscar_primeira_linha_vazia(sheet)
                     carimbo = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                     novas_linhas = [[d, h, reagendado, ticket, org, atividade, analista, carimbo, solicitante, obs_texto, cliente_tipo, ambiente, topo, ""] for d, h in horarios]
-                    
                     sheet.update(values=novas_linhas, range_name=f"A{primeira_linha}:N{primeira_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
-                    
-                    st.success(f"🎉 Registrado com sucesso na linha {primeira_linha}!")
-                    
-                    # Gerador de Check-in
-                    st.subheader("📋 Check-in Gerado")
-                    resumo = f"--- CHECK-IN ---\nTÍTULO: [AGENDADO] [{data_str}] - {atividade}\nCLIENTE: {org} | TICKET: {ticket}\nANALISTA: {analista}"
-                    st.code(resumo, language="text")
+                    st.success("✅ Agendamento registrado.")
+                    st.code(f"--- CHECK-IN ---\nTÍTULO: [AGENDADO] [{data_str}] - {atividade}\nCLIENTE: {org} | TICKET: {ticket}", language="text")
             except Exception as e:
-                st.error(f"Erro na Gravação: {e}")
+                st.error(f"Erro: {e}")
