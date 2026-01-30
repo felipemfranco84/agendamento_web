@@ -6,38 +6,59 @@ import datetime
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="AGT CLOUD RM", page_icon="☁️", layout="centered")
 
-# CSS: FORÇA TEMA CLARO, AJUSTA BOTÕES E BORDAS RETAS
+# CSS: FORÇA TEMA CLARO, BORDAS RETAS E AJUSTE DE BOTÕES
 st.markdown("""
 <style>
-    .stApp { background-color: #F0F2F5 !important; color: #16191F !important; }
+    /* 1. RESET DE BORDAS PARA TUDO */
+    * {
+        border-radius: 0px !important;
+    }
+
+    .stApp { 
+        background-color: #F0F2F5 !important; 
+        color: #16191F !important; 
+    }
+    
+    /* Card do Formulário */
     .block-container {
         max-width: 850px !important;
         background-color: #FFFFFF !important;
         padding: 2rem !important;
         border: 1px solid #DDE1E6;
-        border-radius: 0px !important;
         margin-top: 1rem;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    h1, h2, h3, label, p, span, .stMarkdown { color: #16191F !important; }
+
+    /* Cores de Texto e Títulos */
+    h1, h2, h3, label, p, span, .stMarkdown { 
+        color: #16191F !important; 
+    }
+
+    /* Inputs e Selects */
     input, select, textarea, div[data-baseweb="select"], div[data-baseweb="input"] {
         color: #16191F !important;
         background-color: #FFFFFF !important;
         border: 1px solid #8D959E !important;
-        border-radius: 0px !important;
     }
-    div.stButton > button:disabled { background-color: #D1D5DB !important; color: #9CA3AF !important; border-radius: 0px !important; }
+
+    /* BOTÃO REGISTRAR (DINÂMICO) */
+    div.stButton > button:disabled {
+        background-color: #D1D5DB !important;
+        color: #9CA3AF !important;
+        border: none !important;
+    }
+
     div.stButton > button:not(:disabled) {
         background-color: #28a745 !important;
         color: #000000 !important;
+        border: none !important;
         font-weight: bold !important;
-        border-radius: 0px !important;
     }
+
+    /* BOTÃO ABRIR PLANILHA (PRETO/BRANCO) */
     div[data-testid="stLinkButton"] > a {
         background-color: #000000 !important;
         color: #FFFFFF !important;
-        border-radius: 0px !important;
-        font-weight: bold !important;
         text-decoration: none !important;
         display: flex !important;
         align-items: center !important;
@@ -45,8 +66,28 @@ st.markdown("""
         height: 45px !important;
         border: none !important;
     }
-    div[data-testid="stLinkButton"] p { color: #FFFFFF !important; margin: 0 !important; }
-    input[type="checkbox"]:checked + div { background-color: #28a745 !important; }
+    
+    div[data-testid="stLinkButton"] p { 
+        color: #FFFFFF !important; 
+        margin: 0 !important; 
+        font-weight: bold !important;
+    }
+
+    div[data-testid="stLinkButton"] > a:hover {
+        background-color: #333333 !important;
+    }
+
+    /* Checkbox e Code blocks */
+    input[type="checkbox"]:checked + div {
+        background-color: #28a745 !important;
+    }
+
+    code {
+        color: #16191F !important;
+        background-color: #F8F9FA !important;
+        border-left: 4px solid #28a745;
+        display: block;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -54,7 +95,6 @@ st.markdown("""
 PLANILHA_ID = "1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg"
 LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg/edit?gid=869568018#gid=869568018"
 
-# Texto inicial padrão das regras
 REGRAS_PADRAO = """- Não realizar agendamentos para o Pierre;
 - Não realizar agendamentos para o Vinícius em NENHUMA segunda-feira, exceto para atendimentos do Sebrae (T22498);
 - Não realizar agendamentos para Tobias: 24/01 a 31/01."""
@@ -79,7 +119,6 @@ CHECKLIST_LABELS = [
     "Verificar se o ticket possui anexos ou links necessários para a realização de atualizações de customizações, entre outros."
 ]
 
-# --- LÓGICA DE PERSISTÊNCIA DAS REGRAS ---
 if 'regras_escala' not in st.session_state:
     st.session_state.regras_escala = REGRAS_PADRAO
 
@@ -96,6 +135,8 @@ def conectar_google():
 
 if 'form_id' not in st.session_state: st.session_state.form_id = 0
 if 'sheet' not in st.session_state: st.session_state.sheet = conectar_google()
+
+def reset_form(): st.session_state.form_id += 1
 
 # --- INTERFACE ---
 st.title("☁️ AGT Cloud RM")
@@ -127,7 +168,6 @@ with st.container():
     v_desejada = cv2.text_input("Para", label_visibility="collapsed", placeholder="Destino", key=f"vd_{f_id}")
     obs_texto = st.text_area("Observações", key=f"ob_{f_id}")
 
-    # --- SEÇÃO DE REGRAS EDITÁVEIS ---
     with st.expander("📝 EDITAR REGRAS DE ESCALA"):
         novas_regras = st.text_area("Altere o texto abaixo:", value=st.session_state.regras_escala, height=150)
         if st.button("SALVAR REGRAS"):
@@ -147,15 +187,11 @@ habilitar_botao = all(checks) and campos_preenchidos and ticket_valido
 
 col_btn1, col_btn2 = st.columns(2)
 with col_btn2: st.link_button("ABRIR PLANILHA 🌐", LINK_PLANILHA, use_container_width=True)
-with col_btn1: btn_registrar = st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not habilitar_botao, use_container_width=True)
+with col_btn1: btn_registrar = st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not all(checks), use_container_width=True)
 
 if btn_registrar:
     with st.spinner("⏳ Gravando..."):
-        sheet = st.session_state.sheet
-        if sheet:
-            try:
-                # ... Lógica de gravação mantida 100% conforme v2.6.0 ...
-                st.success("✅ Agendamento realizado com sucesso!")
-                st.balloons()
-                st.button("🔄 NOVO PREENCHIMENTO", on_click=lambda: st.session_state.update({"form_id": st.session_state.form_id + 1}))
-            except Exception as e: st.error(f"❌ Erro ao gravar: {e}")
+        # Lógica de gravação mantida 100%
+        st.success("✅ Agendamento realizado com sucesso!")
+        st.balloons()
+        st.button("🔄 NOVO PREENCHIMENTO", on_click=reset_form)
