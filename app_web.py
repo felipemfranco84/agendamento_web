@@ -95,10 +95,10 @@ ANALISTAS_MAP = {
 }
 
 CHECKLIST_LABELS = [
-    "Verificar se a quantidade de horários condiz com o número de agendamentos.",
+    "Verificar se a quantidade de horários condiz com o número de agendamentos, acessando o ambiente e validando a quantidade de servidores.",
     "Verificar se o patch não foi cancelado pelo produto.",
-    "Verificar se o cliente utiliza PVI.",
-    "Verificar se o cliente marcou réplica de produção.",
+    "Verificar se o cliente utiliza PVI; em caso positivo, anexar a informação no ticket para que o PVI seja atualizado.",
+    "Verificar se o cliente marcou réplica ao solicitar a atualização de produção; em caso positivo, gerar um novo ticket para a réplica.",
     "Verificar se o ticket possui anexos ou links necessários."
 ]
 
