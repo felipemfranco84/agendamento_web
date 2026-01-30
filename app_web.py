@@ -73,9 +73,9 @@ ANALISTAS_MAP = {
 }
 
 CHECKLIST_LABELS = [
-    "Verificar se a quantidade de horários condiz com o número de agendamentos, acessando o ambiente e validando a quantidade de servidores."
-    "Verificar se o patch não foi cancelado pelo produto."
-    "Verificar se o cliente marcou réplica ao solicitar a atualização de produção; em caso positivo, gerar um novo ticket para a réplica e validar se os servidores de PRD e DEV estão na mesma versão."
+    "Verificar se a quantidade de horários condiz com o número de agendamentos, acessando o ambiente e validando a quantidade de servidores.",
+    "Verificar se o patch não foi cancelado pelo produto.",
+    "Verificar se o cliente marcou réplica ao solicitar a atualização de produção; em caso positivo, gerar um novo ticket para a réplica e validar se os servidores de PRD e DEV estão na mesma versão.",
     "Verificar se o ticket possui anexos ou links necessários para a realização de atualizações de customizações, entre outros."
 ]
 
