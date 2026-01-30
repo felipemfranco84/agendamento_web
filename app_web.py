@@ -147,7 +147,7 @@ with st.container():
     org = c2.text_input("Organização", key=f"og_{f_id}")
     
     c3, c4 = st.columns(2)
-    ambiente = c3.selectbox("Ambiente", ["Produção", "Homologação", "Treinamento", "Não Produtivo"], key=f"ab_{f_id}")
+    ambiente = c3.selectbox("Ambiente", ["Produção", "Desenvolvimento", "Homologação", "Qualidade", "Troubleshooting"], key=f"ab_{f_id}")
     topo = c4.text_input("Topologia", key=f"tp_{f_id}")
     
     c5, c6 = st.columns(2)
