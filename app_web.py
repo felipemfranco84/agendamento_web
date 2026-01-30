@@ -61,7 +61,6 @@ st.markdown("""
         height: 45px !important;
     }
 
-    /* CORREÇÃO: FORÇA A LETRA DO BOTÃO LINK PARA BRANCO */
     div[data-testid="stLinkButton"] p {
         color: #FFFFFF !important;
         font-weight: bold !important;
@@ -83,7 +82,6 @@ ESCALAS = {
 }
 
 ANALISTAS_MAP = {
-    "": "FULL TIME",
     "Pierre Esteves": "NOITE (22h-06h)", "Vinicius Lacerda": "NOITE (22h-06h)",
     "Ariany Oliveira": "ESCALA NOITE (18h-06h)", "Tobias Conti": "ESCALA NOITE (18h-06h)",
     "Felipe Franco": "ESCALA NOITE (18h-06h)", "Alessio Faria": "ESCALA NOITE (18h-06h)",
@@ -97,10 +95,10 @@ ANALISTAS_MAP = {
 }
 
 CHECKLIST_LABELS = [
-    "Verificar se a quantidade de horários condiz com o número de agendamentos, acessando o ambiente e validando a quantidade de servidores.",
+    "Verificar se a quantidade de horários condiz com o número de agendamentos.",
     "Verificar se o patch não foi cancelado pelo produto.",
-    "Verificar se o cliente utiliza PVI; em caso positivo, anexar a informação no ticket para que o PVI seja atualizado.",
-    "Verificar se o cliente marcou réplica ao solicitar a atualização de produção; em caso positivo, gerar um novo ticket para a réplica.",
+    "Verificar se o cliente utiliza PVI.",
+    "Verificar se o cliente marcou réplica de produção.",
     "Verificar se o ticket possui anexos ou links necessários."
 ]
 
@@ -158,7 +156,7 @@ with st.container():
     
     c7, c8 = st.columns(2)
     atividade = c7.selectbox("Atividade", ["","Atualizar Release RM", "Atualizar Patch RM", "Réplica de Base", "Atualizar Customização RM", "Atualizar Metadados RM", "Outros"], key=f"at_{f_id}")
-    analista = c8.selectbox("Para qual analista?", sorted(list(ANALISTAS_MAP.keys())), key=f"al_{f_id}")
+    analista = c8.selectbox("Para qual analista?", [""] + sorted(list(ANALISTAS_MAP.keys())), key=f"al_{f_id}")
     
     c9, c10 = st.columns(2)
     solicitante = c9.text_input("Solicitante", key=f"sl_{f_id}")
@@ -173,17 +171,22 @@ with st.container():
 st.divider()
 st.error("""
 **ATENÇÃO**
-- Não realizar agendamentos para o Pierre;
-- Não realizar agendamentos para o Vinícius em NENHUMA segunda-feira, exceto para atendimentos do Sebrae (T22498);
+- Não realizar agendamentos para o Pierre ou Vinícius na segunda-feira.
 - Não realizar agendamentos para Tobias: 24/01 a 31/01.
 """)
 st.subheader("🛡️ Checklist de Segurança")
 checks = [st.checkbox(label, key=f"ck_{i}_{f_id}") for i, label in enumerate(CHECKLIST_LABELS)]
 
-# VALIDAÇÃO DE OBRIGATORIEDADE E ESCALA
-campos_preenchidos = all([ticket, org, topo, solicitante, hora_inicio])
+# VALIDAÇÃO DE OBRIGATORIEDADE (Incluindo Selectboxes)
+# Strings vazias "" em Python retornam False, forçando a seleção.
+campos_preenchidos = all([ticket, org, topo, solicitante, hora_inicio, ambiente, cliente_tipo, reagendado, atividade, analista])
 ticket_valido = ticket.isdigit() if ticket else False
-horario_na_escala = hora_inicio in ESCALAS[ANALISTAS_MAP[analista]]
+
+# Validação de escala só ocorre se um analista válido for escolhido
+horario_na_escala = False
+if analista != "":
+    horario_na_escala = hora_inicio in ESCALAS.get(ANALISTAS_MAP.get(analista, ""), [])
+
 habilitar_botao = all(checks) and campos_preenchidos and ticket_valido and horario_na_escala
 
 col_btn1, col_btn2 = st.columns(2)
@@ -193,11 +196,12 @@ with col_btn2:
 with col_btn1:
     btn_registrar = st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not habilitar_botao, use_container_width=True)
 
+# MENSAGENS DE ORIENTAÇÃO
 if not ticket_valido and ticket:
     st.warning("⚠️ O campo Ticket deve conter apenas números.")
 
-if not horario_na_escala and hora_inicio:
-    st.warning(f"⚠️ O horário {hora_inicio} está fora da escala do analista {analista} ({ANALISTAS_MAP[analista]}).")
+if analista != "" and not horario_na_escala and hora_inicio:
+    st.warning(f"⚠️ O horário {hora_inicio} está fora da escala do analista {analista}.")
 
 if btn_registrar:
     with st.spinner("⏳ Gravando..."):
