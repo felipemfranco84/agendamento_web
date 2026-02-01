@@ -31,14 +31,13 @@ st.markdown("""
         outline: none !important;
     }
 
-    /* ESTADO DE CLIQUE (FOCO): APENAS ESCURECE A BORDA */
+    /* ESTADO DE CLIQUE (FOCO) */
     div[data-baseweb="input"]:focus-within, 
     div[data-baseweb="select"]:focus-within,
     div[data-testid="stNumberInput"]:focus-within,
     textarea:focus {
         border-color: #16191F !important;
         box-shadow: none !important;
-        outline: none !important;
     }
 
     h1, h2, h3, label, p, span, .stMarkdown { color: #16191F !important; }
@@ -51,7 +50,7 @@ st.markdown("""
         font-weight: bold !important;
     }
 
-    /* BOTÃO ABRIR PLANILHA (PRETO COM LETRA BRANCA) */
+    /* BOTÕES DE LINK (PRETO COM LETRA BRANCA) */
     div[data-testid="stLinkButton"] > a {
         background-color: #000000 !important;
         text-decoration: none !important;
@@ -66,8 +65,50 @@ st.markdown("""
         font-weight: bold !important;
         margin: 0 !important;
     }
+    
 </style>
 """, unsafe_allow_html=True)
+
+# --- BARRA LATERAL (SIDEBAR) - ATALHOS ---
+with st.sidebar:
+    st.title("🔗 Atalhos Rápidos")
+    st.divider()
+    st.link_button("Atend. RM - Report Diário 📊", 
+                   "https://lookerstudio.google.com/reporting/5371a9df-e702-466d-865c-33ce01eed3f1/page/p_8297gqodrd", 
+                   use_container_width=True)
+    
+    st.link_button("Formulário - Report Diário 📝", 
+                   "https://docs.google.com/forms/d/e/1FAIpQLSeBx-5XK-Q3QBWmqV0cYDKgMfuTPxSj_dtBpHT_OGkWcPqTDg/viewform", 
+                   use_container_width=True)
+    
+    st.divider()
+    st.subheader("Arquivos e Pastas")
+    
+    st.link_button("Cursos obrigatórios 📚", 
+                   "https://drive.google.com/drive/u/0/folders/1YpypLsgyx0rCwTUPWYhAh4rLp1ooz7K-", 
+                   use_container_width=True)
+    
+    st.link_button("Cloud Suporte RM ☁️", 
+                   "https://drive.google.com/drive/folders/0AG62zH1JqkpHUk9PVA", 
+                   use_container_width=True)
+    
+    st.link_button("Reuniões Suporte Cloud RM 🤝", 
+                   "https://docs.google.com/document/d/1SXHiiyrqffBbnkrNWErDOqTYLCy9ZznvbYKTouZGEIE/edit?tab=t.svf4xa68rwv4#heading=h.ioytcxbmerta", 
+                   use_container_width=True)
+    
+    st.link_button("Versões antigas RM 📂", 
+                   "https://drive.google.com/drive/folders/1F8YTwsRP60XIZuanoL_4gCHEIc92F60a", 
+                   use_container_width=True)
+    
+    st.link_button("Escala Seginf 🕒", 
+                   "https://tdn.totvs.com/pages/releaseview.action?pageId=235598182", 
+                   use_container_width=True)
+    
+    st.link_button("Atulizadores G-Global 🛠️", 
+                   "https://releases.graphon.com/6.x/", 
+                   use_container_width=True)
+    
+    st.divider()
 
 # --- CONSTANTES DE NEGÓCIO ---
 PLANILHA_ID = "1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg"
@@ -137,7 +178,7 @@ if 'sheet' not in st.session_state: st.session_state.sheet = conectar_google()
 
 def reset_form(): st.session_state.form_id += 1
 
-# --- INTERFACE ---
+# --- INTERFACE PRINCIPAL ---
 st.title("☁️ AGT Cloud RM")
 f_id = st.session_state.form_id
 
@@ -169,20 +210,12 @@ with st.container():
     obs_texto = st.text_area("Observações", key=f"ob_{f_id}")
 
 st.divider()
-st.error("""
-**ATENÇÃO**
-- Não realizar agendamentos para o Pierre ou Vinícius na segunda-feira.
-- Não realizar agendamentos para Tobias: 24/01 a 31/01.
-""")
+st.error("""**ATENÇÃO** - Não realizar agendamentos para Pierre/Vinícius na segunda. - Não agendar Tobias: 24/01 a 31/01.""")
 st.subheader("🛡️ Checklist de Segurança")
 checks = [st.checkbox(label, key=f"ck_{i}_{f_id}") for i, label in enumerate(CHECKLIST_LABELS)]
 
-# VALIDAÇÃO DE OBRIGATORIEDADE (Incluindo Selectboxes)
-# Strings vazias "" em Python retornam False, forçando a seleção.
 campos_preenchidos = all([ticket, org, topo, solicitante, hora_inicio, ambiente, cliente_tipo, reagendado, atividade, analista])
 ticket_valido = ticket.isdigit() if ticket else False
-
-# Validação de escala só ocorre se um analista válido for escolhido
 horario_na_escala = False
 if analista != "":
     horario_na_escala = hora_inicio in ESCALAS.get(ANALISTAS_MAP.get(analista, ""), [])
@@ -190,35 +223,20 @@ if analista != "":
 habilitar_botao = all(checks) and campos_preenchidos and ticket_valido and horario_na_escala
 
 col_btn1, col_btn2 = st.columns(2)
-with col_btn2:
-    st.link_button("ABRIR PLANILHA 🌐", LINK_PLANILHA, use_container_width=True)
-
+with col_btn2: st.link_button("ABRIR PLANILHA 🌐", LINK_PLANILHA, use_container_width=True)
 with col_btn1:
-    btn_registrar = st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not habilitar_botao, use_container_width=True)
-
-# MENSAGENS DE ORIENTAÇÃO
-if not ticket_valido and ticket:
-    st.warning("⚠️ O campo Ticket deve conter apenas números.")
-
-if analista != "" and not horario_na_escala and hora_inicio:
-    st.warning(f"⚠️ O horário {hora_inicio} está fora da escala do analista {analista}.")
-
-if btn_registrar:
-    with st.spinner("⏳ Gravando..."):
-        sheet = st.session_state.sheet
-        if sheet:
+    if st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not habilitar_botao, use_container_width=True):
+        with st.spinner("⏳ Gravando..."):
             try:
                 data_str = data_input.strftime("%d/%m/%Y")
-                horarios = buscar_horarios_disponiveis(sheet, data_str, analista, qtd_tickets, hora_inicio)
-                if len(horarios) < qtd_tickets:
-                    st.error("❌ Janelas insuficientes!")
+                horarios = buscar_horarios_disponiveis(st.session_state.sheet, data_str, analista, qtd_tickets, hora_inicio)
+                if len(horarios) < qtd_tickets: st.error("❌ Janelas insuficientes!")
                 else:
-                    prox_linha = len(sheet.col_values(1)) + 1
+                    prox_linha = len(st.session_state.sheet.col_values(1)) + 1
                     carimbo = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                     novas_linhas = [[d, h, reagendado, ticket, org, atividade, analista, carimbo, solicitante, obs_texto, cliente_tipo, ambiente, topo, ""] for d, h in horarios]
-                    sheet.update(values=novas_linhas, range_name=f"A{prox_linha}:N{prox_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
+                    st.session_state.sheet.update(values=novas_linhas, range_name=f"A{prox_linha}:N{prox_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
                     st.success("✅ Agendamento realizado com sucesso!")
                     st.balloons()
                     st.button("🔄 NOVO PREENCHIMENTO", on_click=reset_form)
-            except Exception as e:
-                st.error(f"❌ Erro ao gravar: {e}")
+            except Exception as e: st.error(f"❌ Erro: {e}")
