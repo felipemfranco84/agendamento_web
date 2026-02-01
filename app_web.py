@@ -6,7 +6,7 @@ import datetime
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="AGT CLOUD RM", page_icon="☁️", layout="centered")
 
-# CSS: FORÇA TEMA CLARO, BORDAS RETAS E AJUSTA CORES DE BOTÕES
+# CSS: MANTIDO INTACTO (VERSÃO 3.2.5)
 st.markdown("""
 <style>
     * { border-radius: 0px !important; }
@@ -19,100 +19,54 @@ st.markdown("""
         margin-top: 1rem;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    
-    /* PADRONIZAÇÃO DE BORDAS: INPUTS, SELECTS E NUMBER_INPUT */
-    div[data-baseweb="input"] > div, 
-    div[data-baseweb="select"] > div,
-    div[data-testid="stNumberInput"] > div,
-    textarea {
+    div[data-baseweb="input"] > div, div[data-baseweb="select"] > div,
+    div[data-testid="stNumberInput"] > div, textarea {
         border: 1px solid #8D959E !important;
         background-color: #FFFFFF !important;
         box-shadow: none !important;
         outline: none !important;
     }
-
-    /* ESTADO DE CLIQUE (FOCO) */
-    div[data-baseweb="input"]:focus-within, 
-    div[data-baseweb="select"]:focus-within,
-    div[data-testid="stNumberInput"]:focus-within,
-    textarea:focus {
+    div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within,
+    div[data-testid="stNumberInput"]:focus-within, textarea:focus {
         border-color: #16191F !important;
         box-shadow: none !important;
     }
-
     h1, h2, h3, label, p, span, .stMarkdown { color: #16191F !important; }
     input, select, textarea { caret-color: #16191F !important; color: #16191F !important; }
-
-    /* BOTÃO REGISTRAR (VERDE) */
-    div.stButton > button:not(:disabled) {
-        background-color: #28a745 !important;
-        color: #000000 !important;
-        font-weight: bold !important;
-    }
-
-    /* BOTÕES DE LINK (PRETO COM LETRA BRANCA) */
-    div[data-testid="stLinkButton"] > a {
-        background-color: #000000 !important;
-        text-decoration: none !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        height: 45px !important;
-    }
-
-    div[data-testid="stLinkButton"] p {
-        color: #FFFFFF !important;
-        font-weight: bold !important;
-        margin: 0 !important;
-    }
-    
+    div.stButton > button:not(:disabled) { background-color: #28a745 !important; color: #000000 !important; font-weight: bold !important; }
+    div[data-testid="stLinkButton"] > a { background-color: #000000 !important; text-decoration: none !important; display: flex !important; align-items: center !important; justify-content: center !important; height: 45px !important; }
+    div[data-testid="stLinkButton"] p { color: #FFFFFF !important; font-weight: bold !important; margin: 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL (SIDEBAR) - ATALHOS ---
+# --- BARRA LATERAL (SIDEBAR) ---
 with st.sidebar:
     st.title("🔗 Atalhos Rápidos")
     st.divider()
-    st.link_button("Atend. RM - Report Diário 📊", 
-                   "https://lookerstudio.google.com/reporting/5371a9df-e702-466d-865c-33ce01eed3f1/page/p_8297gqodrd", 
-                   use_container_width=True)
-    
-    st.link_button("Formulário - Report Diário 📝", 
-                   "https://docs.google.com/forms/d/e/1FAIpQLSeBx-5XK-Q3QBWmqV0cYDKgMfuTPxSj_dtBpHT_OGkWcPqTDg/viewform", 
-                   use_container_width=True)
-    
+    st.link_button("Atend. RM - Report Diário 📊", "https://lookerstudio.google.com/reporting/5371a9df-e702-466d-865c-33ce01eed3f1/page/p_8297gqodrd", use_container_width=True)
+    st.link_button("Formulário - Report Diário 📝", "https://docs.google.com/forms/d/e/1FAIpQLSeBx-5XK-Q3QBWmqV0cYDKgMfuTPxSj_dtBpHT_OGkWcPqTDg/viewform", use_container_width=True)
     st.divider()
     st.subheader("Arquivos e Pastas")
-    
-    st.link_button("Cursos obrigatórios 📚", 
-                   "https://drive.google.com/drive/u/0/folders/1YpypLsgyx0rCwTUPWYhAh4rLp1ooz7K-", 
-                   use_container_width=True)
-    
-    st.link_button("Cloud Suporte RM ☁️", 
-                   "https://drive.google.com/drive/folders/0AG62zH1JqkpHUk9PVA", 
-                   use_container_width=True)
-    
-    st.link_button("Reuniões Suporte Cloud RM 🤝", 
-                   "https://docs.google.com/document/d/1SXHiiyrqffBbnkrNWErDOqTYLCy9ZznvbYKTouZGEIE/edit?tab=t.svf4xa68rwv4#heading=h.ioytcxbmerta", 
-                   use_container_width=True)
-    
-    st.link_button("Versões antigas RM 📂", 
-                   "https://drive.google.com/drive/folders/1F8YTwsRP60XIZuanoL_4gCHEIc92F60a", 
-                   use_container_width=True)
-    
-    st.link_button("Escala Seginf 🕒", 
-                   "https://tdn.totvs.com/pages/releaseview.action?pageId=235598182", 
-                   use_container_width=True)
-    
-    st.link_button("Atulizadores G-Global 🛠️", 
-                   "https://releases.graphon.com/6.x/", 
-                   use_container_width=True)
-    
+    st.link_button("Cursos obrigatórios 📚", "https://drive.google.com/drive/u/0/folders/1YpypLsgyx0rCwTUPWYhAh4rLp1ooz7K-", use_container_width=True)
+    st.link_button("Cloud Suporte RM ☁️", "https://drive.google.com/drive/folders/0AG62zH1JqkpHUk9PVA", use_container_width=True)
+    st.link_button("Reuniões Suporte Cloud RM 🤝", "https://docs.google.com/document/d/1SXHiiyrqffBbnkrNWErDOqTYLCy9ZznvbYKTouZGEIE/edit?tab=t.svf4xa68rwv4#heading=h.ioytcxbmerta", use_container_width=True)
+    st.link_button("Versões antigas RM 📂", "https://drive.google.com/drive/folders/1F8YTwsRP60XIZuanoL_4gCHEIc92F60a", use_container_width=True)
+    st.link_button("Escala Seginf 🕒", "https://tdn.totvs.com/pages/releaseview.action?pageId=235598182", use_container_width=True)
+    st.link_button("Atulizadores G-Global 🛠️", "https://releases.graphon.com/6.x/", use_container_width=True)
     st.divider()
 
 # --- CONSTANTES DE NEGÓCIO ---
 PLANILHA_ID = "1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg"
 LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg/edit?gid=869568018#gid=869568018"
+
+# FALLBACK: Usado apenas se a planilha estiver vazia ou offline
+CAMPO_ATENCAO_DEFAULT = [
+    "ATENÇÃO",
+    "- Não realizar agendamentos para o Pierre;",
+    "- Não realizar agendamentos para o Vinícius em NENHUMA segunda-feira, exceto para atendimentos do Sebrae (T22498);",
+    "- Não realizar agendamos para os analistas abaixo nas respectivas datas: ;",
+    "- Tobias: 24/01 a 31/01;"
+]
 
 ESCALAS = {
     "NOITE (22h-06h)": ["22:00", "23:00", "00:00", "01:00", "02:00", "03:00", "04:00", "05:00"],
@@ -144,15 +98,29 @@ CHECKLIST_LABELS = [
 ]
 
 def conectar_google():
+    """Docstring: Estabelece conexao com a planilha principal do Google Sheets."""
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         creds_dict = dict(st.secrets["gcp_service_account"])
         raw_key = creds_dict["private_key"].replace("\\n", "\n").strip()
         creds_dict["private_key"] = raw_key
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-        client = gspread.authorize(creds)
-        return client.open_by_key(PLANILHA_ID).sheet1
-    except: return None
+        client = gspread.authorize(ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope))
+        return client.open_by_key(PLANILHA_ID)
+    except Exception as e:
+        st.sidebar.error(f"Erro de conexão: {e}")
+        return None
+
+def carregar_avisos_planilha(spreadsheet):
+    """Docstring: Busca os avisos da aba 'Avisos'. Retorna lista de strings ou fallback."""
+    try:
+        # Tenta acessar a aba 'Avisos'
+        sheet_avisos = spreadsheet.worksheet("Avisos")
+        # Pega todos os valores da Coluna A
+        avisos = sheet_avisos.col_values(1)
+        # Se estiver vazio, usa o default
+        return avisos if avisos else CAMPO_ATENCAO_DEFAULT
+    except:
+        return CAMPO_ATENCAO_DEFAULT
 
 def buscar_horarios_disponiveis(sheet, data_inicio_str, analista, qtd_necessaria, hora_inicio_manual):
     try:
@@ -173,8 +141,9 @@ def buscar_horarios_disponiveis(sheet, data_inicio_str, analista, qtd_necessaria
         return disponiveis
     except: return []
 
+# --- INICIALIZAÇÃO DE ESTADO ---
 if 'form_id' not in st.session_state: st.session_state.form_id = 0
-if 'sheet' not in st.session_state: st.session_state.sheet = conectar_google()
+if 'spreadsheet' not in st.session_state: st.session_state.spreadsheet = conectar_google()
 
 def reset_form(): st.session_state.form_id += 1
 
@@ -186,31 +155,30 @@ with st.container():
     c1, c2 = st.columns(2)
     ticket = c1.text_input("Ticket (Apenas números)", key=f"tk_{f_id}")
     org = c2.text_input("Organização", key=f"og_{f_id}")
-    
     c3, c4 = st.columns(2)
     ambiente = c3.selectbox("Ambiente", ["", "Produção", "Desenvolvimento", "Homologação", "Qualidade", "Troubleshooting"], key=f"ab_{f_id}")
     topo = c4.text_input("Topologia", key=f"tp_{f_id}")
-    
     c5, c6 = st.columns(2)
     cliente_tipo = c5.selectbox("Cliente", ["","Standard", "Prime"], key=f"ct_{f_id}")
     reagendado = c6.selectbox("É reagendamento?", ["","Não", "Sim"], key=f"re_{f_id}")
-    
     c7, c8 = st.columns(2)
     atividade = c7.selectbox("Atividade", ["","Atualizar Release RM", "Atualizar Patch RM", "Réplica de Base", "Atualizar Customização RM", "Atualizar Metadados RM", "Outros"], key=f"at_{f_id}")
     analista = c8.selectbox("Para qual analista?", [""] + sorted(list(ANALISTAS_MAP.keys())), key=f"al_{f_id}")
-    
     c9, c10 = st.columns(2)
     solicitante = c9.text_input("Solicitante", key=f"sl_{f_id}")
     data_input = c10.date_input("Data", datetime.date.today(), key=f"da_{f_id}")
-    
     c11, c12 = st.columns(2)
     hora_inicio = c11.text_input("Horário (HH:MM)", key=f"ho_{f_id}")
     qtd_tickets = c12.number_input("Qtd de Ticket", min_value=1, value=1, key=f"qt_{f_id}")
-    
     obs_texto = st.text_area("Observações", key=f"ob_{f_id}")
 
 st.divider()
-st.error("""**ATENÇÃO** - Não realizar agendamentos para Pierre/Vinícius na segunda. - Não agendar Tobias: 24/01 a 31/01.""")
+
+# RENDERIZAÇÃO DINÂMICA DOS AVISOS (BUSCANDO DA PLANILHA)
+avisos_atuais = carregar_avisos_planilha(st.session_state.spreadsheet)
+msg_formatada = f"**{avisos_atuais[0]}**" + "".join([f"\n- {item}" for item in avisos_atuais[1:]])
+st.error(msg_formatada)
+
 st.subheader("🛡️ Checklist de Segurança")
 checks = [st.checkbox(label, key=f"ck_{i}_{f_id}") for i, label in enumerate(CHECKLIST_LABELS)]
 
@@ -228,15 +196,16 @@ with col_btn1:
     if st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not habilitar_botao, use_container_width=True):
         with st.spinner("⏳ Gravando..."):
             try:
+                sheet1 = st.session_state.spreadsheet.sheet1
                 data_str = data_input.strftime("%d/%m/%Y")
-                horarios = buscar_horarios_disponiveis(st.session_state.sheet, data_str, analista, qtd_tickets, hora_inicio)
+                horarios = buscar_horarios_disponiveis(sheet1, data_str, analista, qtd_tickets, hora_inicio)
                 if len(horarios) < qtd_tickets: st.error("❌ Janelas insuficientes!")
                 else:
-                    prox_linha = len(st.session_state.sheet.col_values(1)) + 1
+                    prox_linha = len(sheet1.col_values(1)) + 1
                     carimbo = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                     novas_linhas = [[d, h, reagendado, ticket, org, atividade, analista, carimbo, solicitante, obs_texto, cliente_tipo, ambiente, topo, ""] for d, h in horarios]
-                    st.session_state.sheet.update(values=novas_linhas, range_name=f"A{prox_linha}:N{prox_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
+                    sheet1.update(values=novas_linhas, range_name=f"A{prox_linha}:N{prox_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
                     st.success("✅ Agendamento realizado com sucesso!")
                     st.balloons()
                     st.button("🔄 NOVO PREENCHIMENTO", on_click=reset_form)
-            except Exception as e: st.error(f"❌ Erro: {e}")
+            except Exception as e: st.error(f"❌ Erro ao gravar: {e}")
