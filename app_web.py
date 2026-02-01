@@ -26,11 +26,6 @@ st.markdown("""
         box-shadow: none !important;
         outline: none !important;
     }
-    div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within,
-    div[data-testid="stNumberInput"]:focus-within, textarea:focus {
-        border-color: #16191F !important;
-        box-shadow: none !important;
-    }
     h1, h2, h3, label, p, span, .stMarkdown { color: #16191F !important; }
     input, select, textarea { caret-color: #16191F !important; color: #16191F !important; }
     div.stButton > button:not(:disabled) { background-color: #28a745 !important; color: #000000 !important; font-weight: bold !important; }
@@ -39,7 +34,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL (SIDEBAR) ---
+# --- BARRA LATERAL (MANTIDA) ---
 with st.sidebar:
     st.title("🔗 Atalhos Rápidos")
     st.divider()
@@ -49,24 +44,13 @@ with st.sidebar:
     st.subheader("Arquivos e Pastas")
     st.link_button("Cursos obrigatórios 📚", "https://drive.google.com/drive/u/0/folders/1YpypLsgyx0rCwTUPWYhAh4rLp1ooz7K-", use_container_width=True)
     st.link_button("Cloud Suporte RM ☁️", "https://drive.google.com/drive/folders/0AG62zH1JqkpHUk9PVA", use_container_width=True)
-    st.link_button("Reuniões Suporte Cloud RM 🤝", "https://docs.google.com/document/d/1SXHiiyrqffBbnkrNWErDOqTYLCy9ZznvbYKTouZGEIE/edit?tab=t.svf4xa68rwv4#heading=h.ioytcxbmerta", use_container_width=True)
-    st.link_button("Versões antigas RM 📂", "https://drive.google.com/drive/folders/1F8YTwsRP60XIZuanoL_4gCHEIc92F60a", use_container_width=True)
     st.link_button("Escala Seginf 🕒", "https://tdn.totvs.com/pages/releaseview.action?pageId=235598182", use_container_width=True)
-    st.link_button("Atulizadores G-Global 🛠️", "https://releases.graphon.com/6.x/", use_container_width=True)
     st.divider()
 
-# --- CONSTANTES DE NEGÓCIO ---
+# --- CONSTANTES ---
 PLANILHA_ID = "1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg"
 LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1UOlBufBB4JL2xQgkM5A4xJAHJUp8H0bs8vmYTjHnCfg/edit?gid=869568018#gid=869568018"
-
-# FALLBACK: Usado apenas se a planilha estiver vazia ou offline
-CAMPO_ATENCAO_DEFAULT = [
-    "ATENÇÃO",
-    "- Não realizar agendamentos para o Pierre;",
-    "- Não realizar agendamentos para o Vinícius em NENHUMA segunda-feira, exceto para atendimentos do Sebrae (T22498);",
-    "- Não realizar agendamos para os analistas abaixo nas respectivas datas: ;",
-    "- Tobias: 24/01 a 31/01;"
-]
+CAMPO_ATENCAO_DEFAULT = ["ATENÇÃO", "- Erro ao carregar avisos da planilha."]
 
 ESCALAS = {
     "NOITE (22h-06h)": ["22:00", "23:00", "00:00", "01:00", "02:00", "03:00", "04:00", "05:00"],
@@ -90,15 +74,15 @@ ANALISTAS_MAP = {
 }
 
 CHECKLIST_LABELS = [
-    "Verificar se a quantidade de horários condiz com o número de agendamentos, acessando o ambiente e validando a quantidade de servidores.",
+    "Verificar se a quantidade de horários condiz com o número de agendamentos...",
     "Verificar se o patch não foi cancelado pelo produto.",
-    "Verificar se o cliente utiliza PVI; em caso positivo, anexar a informação no ticket para que o PVI seja atualizado.",
-    "Verificar se o cliente marcou réplica ao solicitar a atualização de produção; em caso positivo, gerar um novo ticket para a réplica.",
+    "Verificar se o cliente utiliza PVI...",
+    "Verificar se o cliente marcou réplica...",
     "Verificar se o ticket possui anexos ou links necessários."
 ]
 
+# --- FUNÇÕES ---
 def conectar_google():
-    """Docstring: Estabelece conexao com a planilha principal do Google Sheets."""
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         creds_dict = dict(st.secrets["gcp_service_account"])
@@ -106,21 +90,16 @@ def conectar_google():
         creds_dict["private_key"] = raw_key
         client = gspread.authorize(ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope))
         return client.open_by_key(PLANILHA_ID)
-    except Exception as e:
-        st.sidebar.error(f"Erro de conexão: {e}")
-        return None
+    except: return None
 
 def carregar_avisos_planilha(spreadsheet):
-    """Docstring: Busca os avisos da aba 'Avisos'. Retorna lista de strings ou fallback."""
     try:
-        # Tenta acessar a aba 'Avisos'
-        sheet_avisos = spreadsheet.worksheet("Avisos")
-        # Pega todos os valores da Coluna A
-        avisos = sheet_avisos.col_values(1)
-        # Se estiver vazio, usa o default
-        return avisos if avisos else CAMPO_ATENCAO_DEFAULT
-    except:
+        if spreadsheet:
+            sheet_avisos = spreadsheet.worksheet("Avisos")
+            avisos = sheet_avisos.col_values(1)
+            return avisos if avisos else CAMPO_ATENCAO_DEFAULT
         return CAMPO_ATENCAO_DEFAULT
+    except: return CAMPO_ATENCAO_DEFAULT
 
 def buscar_horarios_disponiveis(sheet, data_inicio_str, analista, qtd_necessaria, hora_inicio_manual):
     try:
@@ -141,13 +120,13 @@ def buscar_horarios_disponiveis(sheet, data_inicio_str, analista, qtd_necessaria
         return disponiveis
     except: return []
 
-# --- INICIALIZAÇÃO DE ESTADO ---
+# --- ESTADO ---
 if 'form_id' not in st.session_state: st.session_state.form_id = 0
 if 'spreadsheet' not in st.session_state: st.session_state.spreadsheet = conectar_google()
 
 def reset_form(): st.session_state.form_id += 1
 
-# --- INTERFACE PRINCIPAL ---
+# --- UI PRINCIPAL ---
 st.title("☁️ AGT Cloud RM")
 f_id = st.session_state.form_id
 
@@ -174,7 +153,7 @@ with st.container():
 
 st.divider()
 
-# RENDERIZAÇÃO DINÂMICA DOS AVISOS (BUSCANDO DA PLANILHA)
+# Avisos Dinâmicos
 avisos_atuais = carregar_avisos_planilha(st.session_state.spreadsheet)
 msg_formatada = f"**{avisos_atuais[0]}**" + "".join([f"\n- {item}" for item in avisos_atuais[1:]])
 st.error(msg_formatada)
@@ -182,30 +161,45 @@ st.error(msg_formatada)
 st.subheader("🛡️ Checklist de Segurança")
 checks = [st.checkbox(label, key=f"ck_{i}_{f_id}") for i, label in enumerate(CHECKLIST_LABELS)]
 
-campos_preenchidos = all([ticket, org, topo, solicitante, hora_inicio, ambiente, cliente_tipo, reagendado, atividade, analista])
-ticket_valido = ticket.isdigit() if ticket else False
-horario_na_escala = False
-if analista != "":
-    horario_na_escala = hora_inicio in ESCALAS.get(ANALISTAS_MAP.get(analista, ""), [])
+# Validações
+campos_ok = all([ticket, org, topo, solicitante, hora_inicio, ambiente, cliente_tipo, reagendado, atividade, analista])
+ticket_ok = ticket.isdigit() if ticket else False
+escala_ok = False
+if analista and hora_inicio:
+    escala_ok = hora_inicio in ESCALAS.get(ANALISTAS_MAP.get(analista, ""), [])
 
-habilitar_botao = all(checks) and campos_preenchidos and ticket_valido and horario_na_escala
+habilitar_botao = all(checks) and campos_ok and ticket_ok and escala_ok
 
 col_btn1, col_btn2 = st.columns(2)
 with col_btn2: st.link_button("ABRIR PLANILHA 🌐", LINK_PLANILHA, use_container_width=True)
 with col_btn1:
-    if st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not habilitar_botao, use_container_width=True):
-        with st.spinner("⏳ Gravando..."):
-            try:
-                sheet1 = st.session_state.spreadsheet.sheet1
+    btn_registrar = st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not habilitar_botao, use_container_width=True)
+
+if btn_registrar:
+    with st.spinner("⏳ Gravando..."):
+        try:
+            # Ponto de correção: Garantir que a planilha está conectada antes de gravar
+            ss = st.session_state.spreadsheet if st.session_state.spreadsheet else conectar_google()
+            if ss:
+                sheet_gravar = ss.sheet1
                 data_str = data_input.strftime("%d/%m/%Y")
-                horarios = buscar_horarios_disponiveis(sheet1, data_str, analista, qtd_tickets, hora_inicio)
-                if len(horarios) < qtd_tickets: st.error("❌ Janelas insuficientes!")
+                horarios = buscar_horarios_disponiveis(sheet_gravar, data_str, analista, qtd_tickets, hora_inicio)
+                
+                if len(horarios) < qtd_tickets:
+                    st.error("❌ Janelas insuficientes!")
                 else:
-                    prox_linha = len(sheet1.col_values(1)) + 1
+                    prox_linha = len(sheet_gravar.col_values(1)) + 1
                     carimbo = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                     novas_linhas = [[d, h, reagendado, ticket, org, atividade, analista, carimbo, solicitante, obs_texto, cliente_tipo, ambiente, topo, ""] for d, h in horarios]
-                    sheet1.update(values=novas_linhas, range_name=f"A{prox_linha}:N{prox_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
+                    sheet_gravar.update(values=novas_linhas, range_name=f"A{prox_linha}:N{prox_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
                     st.success("✅ Agendamento realizado com sucesso!")
                     st.balloons()
                     st.button("🔄 NOVO PREENCHIMENTO", on_click=reset_form)
-            except Exception as e: st.error(f"❌ Erro ao gravar: {e}")
+            else:
+                st.error("❌ Erro de conexão com o Google Sheets.")
+        except Exception as e:
+            st.error(f"❌ Erro ao gravar: {e}")
+
+# Mensagens de ajuda
+if ticket and not ticket_ok: st.warning("⚠️ O ticket deve conter apenas números.")
+if analista and hora_inicio and not escala_ok: st.warning(f"⚠️ Horário fora da escala de {analista}.")
