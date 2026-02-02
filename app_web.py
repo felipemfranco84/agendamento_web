@@ -169,7 +169,7 @@ with st.container():
     cliente_tipo = c5.selectbox("Cliente", ["","Standard", "Prime"], key=f"ct_{f_id}")
     reagendado = c6.selectbox("É reagendamento?", ["","Não", "Sim"], key=f"re_{f_id}")
     c7, c8 = st.columns(2)
-    atividade = c7.selectbox("Atividade", ["","Atualizar Release RM", "Atualizar Patch RM", "Réplica de Base", "Atualizar Customização RM", "Atualizar Metadados RM", "Outros"], key=f"at_{f_id}")
+    atividade = c7.selectbox("Atividade", ["","Atualizar Release RM", "Atualizar Patch RM", "Atualizar PVI", "Atualizar RM + PVI", "Réplica de Base", "Atualizar Customização RM", "Atualizar Metadados RM", "Outros"], key=f"at_{f_id}")
     analista = c8.selectbox("Para qual analista?", [""] + sorted(list(ANALISTAS_MAP.keys())), key=f"al_{f_id}")
     c9, c10 = st.columns(2)
     solicitante = c9.text_input("Solicitante", key=f"sl_{f_id}")
