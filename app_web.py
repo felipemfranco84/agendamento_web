@@ -34,17 +34,45 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL (MANTIDA) ---
+# --- BARRA LATERAL (SIDEBAR) - ATALHOS ---
 with st.sidebar:
     st.title("🔗 Atalhos Rápidos")
     st.divider()
-    st.link_button("Atend. RM - Report Diário 📊", "https://lookerstudio.google.com/reporting/5371a9df-e702-466d-865c-33ce01eed3f1/page/p_8297gqodrd", use_container_width=True)
-    st.link_button("Formulário - Report Diário 📝", "https://docs.google.com/forms/d/e/1FAIpQLSeBx-5XK-Q3QBWmqV0cYDKgMfuTPxSj_dtBpHT_OGkWcPqTDg/viewform", use_container_width=True)
+    st.link_button("Atend. RM - Report Diário 📊", 
+                   "https://lookerstudio.google.com/reporting/5371a9df-e702-466d-865c-33ce01eed3f1/page/p_8297gqodrd", 
+                   use_container_width=True)
+    
+    st.link_button("Formulário - Report Diário 📝", 
+                   "https://docs.google.com/forms/d/e/1FAIpQLSeBx-5XK-Q3QBWmqV0cYDKgMfuTPxSj_dtBpHT_OGkWcPqTDg/viewform", 
+                   use_container_width=True)
+    
     st.divider()
     st.subheader("Arquivos e Pastas")
-    st.link_button("Cursos obrigatórios 📚", "https://drive.google.com/drive/u/0/folders/1YpypLsgyx0rCwTUPWYhAh4rLp1ooz7K-", use_container_width=True)
-    st.link_button("Cloud Suporte RM ☁️", "https://drive.google.com/drive/folders/0AG62zH1JqkpHUk9PVA", use_container_width=True)
-    st.link_button("Escala Seginf 🕒", "https://tdn.totvs.com/pages/releaseview.action?pageId=235598182", use_container_width=True)
+    
+    st.link_button("Cursos obrigatórios 📚", 
+                   "https://drive.google.com/drive/u/0/folders/1YpypLsgyx0rCwTUPWYhAh4rLp1ooz7K-", 
+                   use_container_width=True)
+    
+    st.link_button("Cloud Suporte RM ☁️", 
+                   "https://drive.google.com/drive/folders/0AG62zH1JqkpHUk9PVA", 
+                   use_container_width=True)
+    
+    st.link_button("Reuniões Suporte Cloud RM 🤝", 
+                   "https://docs.google.com/document/d/1SXHiiyrqffBbnkrNWErDOqTYLCy9ZznvbYKTouZGEIE/edit?tab=t.svf4xa68rwv4#heading=h.ioytcxbmerta", 
+                   use_container_width=True)
+    
+    st.link_button("Versões antigas RM 📂", 
+                   "https://drive.google.com/drive/folders/1F8YTwsRP60XIZuanoL_4gCHEIc92F60a", 
+                   use_container_width=True)
+    
+    st.link_button("Escala Seginf 🕒", 
+                   "https://tdn.totvs.com/pages/releaseview.action?pageId=235598182", 
+                   use_container_width=True)
+    
+    st.link_button("Atulizadores G-Global 🛠️", 
+                   "https://releases.graphon.com/6.x/", 
+                   use_container_width=True)
+    
     st.divider()
 
 # --- CONSTANTES ---
@@ -74,10 +102,10 @@ ANALISTAS_MAP = {
 }
 
 CHECKLIST_LABELS = [
-    "Verificar se a quantidade de horários condiz com o número de agendamentos...",
+    "Verificar se a quantidade de horários condiz com o número de agendamentos, acessando o ambiente e validando a quantidade de servidores.",
     "Verificar se o patch não foi cancelado pelo produto.",
-    "Verificar se o cliente utiliza PVI...",
-    "Verificar se o cliente marcou réplica...",
+    "Verificar se o cliente utiliza PVI; em caso positivo, anexar a informação no ticket para que o PVI seja atualizado.",
+    "Verificar se o cliente marcou réplica ao solicitar a atualização de produção; em caso positivo, gerar um novo ticket para a réplica.",
     "Verificar se o ticket possui anexos ou links necessários."
 ]
 
