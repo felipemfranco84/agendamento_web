@@ -48,7 +48,7 @@ with st.sidebar:
     st.link_button("Reuniões Suporte Cloud RM 🤝", "https://docs.google.com/document/d/1SXHiiyrqffBbnkrNWErDOqTYLCy9ZznvbYKTouZGEIE/edit?tab=t.svf4xa68rwv4#heading=h.ioytcxbmerta", use_container_width=True)
     st.link_button("Versões antigas RM 📂", "https://drive.google.com/drive/folders/1F8YTwsRP60XIZuanoL_4gCHEIc92F60a", use_container_width=True)
     st.link_button("Escala Seginf 🕒", "https://tdn.totvs.com/pages/releaseview.action?pageId=235598182", use_container_width=True)
-    st.link_button("Atulizadores G-Global 🛠️", "https://releases.graphon.com/6.x/", use_container_width=True)
+    st.link_button("Atualizadores Go-Global 🛠️", "https://releases.graphon.com/6.x/", use_container_width=True)
     st.divider()
 
 # --- CONSTANTES ---
