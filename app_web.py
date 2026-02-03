@@ -2,6 +2,7 @@ import streamlit as st
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import datetime
+import streamlit.components.v1 as components
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="AGT CLOUD RM", page_icon="☁️", layout="centered")
@@ -34,45 +35,20 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL (SIDEBAR) - ATALHOS ---
+# --- BARRA LATERAL (MANTIDA) ---
 with st.sidebar:
     st.title("🔗 Atalhos Rápidos")
     st.divider()
-    st.link_button("Atend. RM - Report Diário 📊", 
-                   "https://lookerstudio.google.com/reporting/5371a9df-e702-466d-865c-33ce01eed3f1/page/p_8297gqodrd", 
-                   use_container_width=True)
-    
-    st.link_button("Formulário - Report Diário 📝", 
-                   "https://docs.google.com/forms/d/e/1FAIpQLSeBx-5XK-Q3QBWmqV0cYDKgMfuTPxSj_dtBpHT_OGkWcPqTDg/viewform", 
-                   use_container_width=True)
-    
+    st.link_button("Atend. RM - Report Diário 📊", "https://lookerstudio.google.com/reporting/5371a9df-e702-466d-865c-33ce01eed3f1/page/p_8297gqodrd", use_container_width=True)
+    st.link_button("Formulário - Report Diário 📝", "https://docs.google.com/forms/d/e/1FAIpQLSeBx-5XK-Q3QBWmqV0cYDKgMfuTPxSj_dtBpHT_OGkWcPqTDg/viewform", use_container_width=True)
     st.divider()
     st.subheader("Arquivos e Pastas")
-    
-    st.link_button("Cursos obrigatórios 📚", 
-                   "https://drive.google.com/drive/u/0/folders/1YpypLsgyx0rCwTUPWYhAh4rLp1ooz7K-", 
-                   use_container_width=True)
-    
-    st.link_button("Cloud Suporte RM ☁️", 
-                   "https://drive.google.com/drive/folders/0AG62zH1JqkpHUk9PVA", 
-                   use_container_width=True)
-    
-    st.link_button("Reuniões Suporte Cloud RM 🤝", 
-                   "https://docs.google.com/document/d/1SXHiiyrqffBbnkrNWErDOqTYLCy9ZznvbYKTouZGEIE/edit?tab=t.svf4xa68rwv4#heading=h.ioytcxbmerta", 
-                   use_container_width=True)
-    
-    st.link_button("Versões antigas RM 📂", 
-                   "https://drive.google.com/drive/folders/1F8YTwsRP60XIZuanoL_4gCHEIc92F60a", 
-                   use_container_width=True)
-    
-    st.link_button("Escala Seginf 🕒", 
-                   "https://tdn.totvs.com/pages/releaseview.action?pageId=235598182", 
-                   use_container_width=True)
-    
-    st.link_button("Atulizadores G-Global 🛠️", 
-                   "https://releases.graphon.com/6.x/", 
-                   use_container_width=True)
-    
+    st.link_button("Cursos obrigatórios 📚", "https://drive.google.com/drive/u/0/folders/1YpypLsgyx0rCwTUPWYhAh4rLp1ooz7K-", use_container_width=True)
+    st.link_button("Cloud Suporte RM ☁️", "https://drive.google.com/drive/folders/0AG62zH1JqkpHUk9PVA", use_container_width=True)
+    st.link_button("Reuniões Suporte Cloud RM 🤝", "https://docs.google.com/document/d/1SXHiiyrqffBbnkrNWErDOqTYLCy9ZznvbYKTouZGEIE/edit?tab=t.svf4xa68rwv4#heading=h.ioytcxbmerta", use_container_width=True)
+    st.link_button("Versões antigas RM 📂", "https://drive.google.com/drive/folders/1F8YTwsRP60XIZuanoL_4gCHEIc92F60a", use_container_width=True)
+    st.link_button("Escala Seginf 🕒", "https://tdn.totvs.com/pages/releaseview.action?pageId=235598182", use_container_width=True)
+    st.link_button("Atulizadores G-Global 🛠️", "https://releases.graphon.com/6.x/", use_container_width=True)
     st.divider()
 
 # --- CONSTANTES ---
@@ -158,6 +134,9 @@ def reset_form(): st.session_state.form_id += 1
 st.title("☁️ AGT Cloud RM")
 f_id = st.session_state.form_id
 
+# Placeholder para feedback no TOPO
+espaco_avisos = st.empty()
+
 with st.container():
     c1, c2 = st.columns(2)
     ticket = c1.text_input("Ticket (Apenas números)", key=f"tk_{f_id}")
@@ -177,17 +156,26 @@ with st.container():
     c11, c12 = st.columns(2)
     hora_inicio = c11.text_input("Horário (HH:MM)", key=f"ho_{f_id}")
     qtd_tickets = c12.number_input("Qtd de Ticket", min_value=1, value=1, key=f"qt_{f_id}")
+    
+    # NOVOS CAMPOS (NÃO INSERIDOS NA PLANILHA)
+    c13, c14 = st.columns(2)
+    v_atual = c13.text_input("Versão Atual", key=f"va_{f_id}")
+    v_desejada = c14.text_input("Versão Desejada", key=f"vd_{f_id}")
+    
     obs_texto = st.text_area("Observações", key=f"ob_{f_id}")
 
 st.divider()
 
-# Avisos Dinâmicos
+# Avisos Dinâmicos da Planilha
 avisos_atuais = carregar_avisos_planilha(st.session_state.spreadsheet)
 msg_formatada = f"**{avisos_atuais[0]}**" + "".join([f"\n- {item}" for item in avisos_atuais[1:]])
 st.error(msg_formatada)
 
 st.subheader("🛡️ Checklist de Segurança")
 checks = [st.checkbox(label, key=f"ck_{i}_{f_id}") for i, label in enumerate(CHECKLIST_LABELS)]
+
+# Placeholder para feedback INFERIOR
+espaco_feedback_inferior = st.empty()
 
 # Validações
 campos_ok = all([ticket, org, topo, solicitante, hora_inicio, ambiente, cliente_tipo, reagendado, atividade, analista])
@@ -198,15 +186,19 @@ if analista and hora_inicio:
 
 habilitar_botao = all(checks) and campos_ok and ticket_ok and escala_ok
 
-col_btn1, col_btn2 = st.columns(2)
-with col_btn2: st.link_button("ABRIR PLANILHA 🌐", LINK_PLANILHA, use_container_width=True)
+# --- BOTÕES DE AÇÃO ---
+col_btn1, col_btn2, col_btn3 = st.columns(3)
 with col_btn1:
     btn_registrar = st.button("REGISTRAR AGENDAMENTOS", type="primary", disabled=not habilitar_botao, use_container_width=True)
+with col_btn2:
+    st.button("🔄 NOVO PREENCHIMENTO", on_click=reset_form, use_container_width=True)
+with col_btn3:
+    st.link_button("ABRIR PLANILHA 🌐", LINK_PLANILHA, use_container_width=True)
 
+# Lógica de Registro
 if btn_registrar:
     with st.spinner("⏳ Gravando..."):
         try:
-            # Ponto de correção: Garantir que a planilha está conectada antes de gravar
             ss = st.session_state.spreadsheet if st.session_state.spreadsheet else conectar_google()
             if ss:
                 sheet_gravar = ss.sheet1
@@ -214,20 +206,54 @@ if btn_registrar:
                 horarios = buscar_horarios_disponiveis(sheet_gravar, data_str, analista, qtd_tickets, hora_inicio)
                 
                 if len(horarios) < qtd_tickets:
-                    st.error("❌ Janelas insuficientes!")
+                    espaco_avisos.error("❌ Janelas insuficientes!")
+                    espaco_feedback_inferior.error("❌ Janelas insuficientes!")
                 else:
                     prox_linha = len(sheet_gravar.col_values(1)) + 1
                     carimbo = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                     novas_linhas = [[d, h, reagendado, ticket, org, atividade, analista, carimbo, solicitante, obs_texto, cliente_tipo, ambiente, topo, ""] for d, h in horarios]
                     sheet_gravar.update(values=novas_linhas, range_name=f"A{prox_linha}:N{prox_linha + len(novas_linhas) - 1}", value_input_option='USER_ENTERED')
-                    st.success("✅ Agendamento realizado com sucesso!")
+                    
+                    # MONTAGEM DO TÍTULO USANDO OS DADOS REAIS DA PLANILHA (HORARIOS[0])
+                    d_real, h_real = horarios[0]
+                    h_formatada = h_real.replace(":", "H")
+                    prefixo = f"[AGENDADO {d_real} ÀS {h_formatada}]"
+                    
+                    if atividade in ["Atualizar Release RM", "Atualizar Patch RM"]:
+                        titulo_gerado = f"{prefixo} Atualização Sistema RM - {ambiente} {topo} - Versão {v_atual} > {v_desejada}"
+                    elif atividade == "Atualizar RM + PVI":
+                        titulo_gerado = f"{prefixo} Atualização Sistema RM + PVI - {ambiente} {topo} - Versão {v_atual} > {v_desejada}"
+                    elif atividade == "Atualizar PVI":
+                        titulo_gerado = f"{prefixo} Atualização Sistema PVI - {ambiente} {topo} - Versão {v_atual} > {v_desejada}"
+                    elif atividade == "Réplica de Base":
+                        titulo_gerado = f"{prefixo} Réplica Base de Dados"
+                    elif atividade == "Atualizar Customização RM":
+                        titulo_gerado = f"{prefixo} Atualização de Customização Sistema RM"
+                    elif atividade == "Atualizar Metadados RM":
+                        titulo_gerado = f"{prefixo} Atualização de Metadados Sistema RM"
+                    else:
+                        titulo_gerado = f"{prefixo} {atividade}"
+                    
+                    # Rola ao topo para focar no sucesso
+                    components.html("<script>window.parent.document.querySelector('section.main').scrollTo(0, 0);</script>", height=0)
+                    
+                    # Exibição Duplicada com Título Dinâmico Real
+                    for p in [espaco_avisos, espaco_feedback_inferior]:
+                        p.success("✅ Agendamento realizado com sucesso!")
+                        p.info(f"**Título:** {titulo_gerado}")
+                    
                     st.balloons()
-                    st.button("🔄 NOVO PREENCHIMENTO", on_click=reset_form)
             else:
-                st.error("❌ Erro de conexão com o Google Sheets.")
+                espaco_avisos.error("❌ Erro de conexão.")
+                espaco_feedback_inferior.error("❌ Erro de conexão.")
         except Exception as e:
-            st.error(f"❌ Erro ao gravar: {e}")
+            espaco_avisos.error(f"❌ Erro ao gravar: {e}")
+            espaco_feedback_inferior.error(f"❌ Erro ao gravar: {e}")
 
-# Mensagens de ajuda
-if ticket and not ticket_ok: st.warning("⚠️ O ticket deve conter apenas números.")
-if analista and hora_inicio and not escala_ok: st.warning(f"⚠️ Horário fora da escala de {analista}.")
+# Mensagens de ajuda via Âncoras
+if ticket and not ticket_ok:
+    espaco_avisos.warning("⚠️ O ticket deve conter apenas números.")
+    espaco_feedback_inferior.warning("⚠️ O ticket deve conter apenas números.")
+if analista and hora_inicio and not escala_ok:
+    espaco_avisos.warning(f"⚠️ Horário fora da escala de {analista}.")
+    espaco_feedback_inferior.warning(f"⚠️ Horário fora da escala de {analista}.")
